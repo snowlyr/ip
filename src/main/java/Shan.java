@@ -24,7 +24,11 @@ public class Shan {
 
     while (sc.hasNextLine()) {
       String inputLine = sc.nextLine().trim();
-      sendMessage(reply(inputLine));
+      try {
+        sendMessage(reply(inputLine));
+      } catch (ShanException e) {
+        sendMessage(e.getMessage());
+      }
 
       if (inputLine.equals("bye")) {
         break;
@@ -41,9 +45,7 @@ public class Shan {
    */
   private static void sendMessage(String message) {
     System.out.println(DIVIDER);
-    for (String line : message.split("\n")) {
-      System.out.println(" " + line);
-    }
+    System.out.println("Shan: " + message);
     System.out.println(DIVIDER);
   }
 
@@ -52,8 +54,16 @@ public class Shan {
    *
    * @param inputLine command entered by the user
    * @return Shan's reply
+   * @throws InvalidCommandException  if the command is blank or unknown
+   * @throws MissingArgumentException if a required argument is missing
+   * @throws InvalidArgumentException if an argument has an invalid value
    */
-  private static String reply(String inputLine) {
+  private static String reply(String inputLine)
+      throws InvalidCommandException, MissingArgumentException, InvalidArgumentException {
+    if (inputLine.isBlank()) {
+      throw new InvalidCommandException("Enter a command dood.");
+    }
+
     String[] tokens = inputLine.split("\\s+", 2);
     String command = tokens[0];
     String arguments = tokens.length == 2 ? tokens[1] : "";
@@ -61,13 +71,34 @@ public class Shan {
     return switch (command) {
       case "bye" -> commandExit();
       case "list" -> commandList();
-      case "mark" -> commandMark(Integer.parseInt(arguments));
-      case "unmark" -> commandUnmark(Integer.parseInt(arguments));
+      case "mark" -> commandMark(parseTaskNumber(arguments));
+      case "unmark" -> commandUnmark(parseTaskNumber(arguments));
       case "todo" -> commandAddToDo(arguments);
       case "deadline" -> commandAddDeadline(arguments);
       case "event" -> commandAddEvent(arguments);
-      default -> "I don't understand that command.";
+      default -> throw new InvalidCommandException("I don't understand bro.");
     };
+  }
+
+  /**
+   * Parses a task number supplied to a mark or unmark command.
+   *
+   * @param argument task number entered by the user
+   * @return parsed task number
+   * @throws MissingArgumentException if the task number is missing
+   * @throws InvalidArgumentException if the task number is not an integer
+   */
+  private static int parseTaskNumber(String argument)
+      throws MissingArgumentException, InvalidArgumentException {
+    if (argument.isBlank()) {
+      throw new MissingArgumentException("Specify a task number.");
+    }
+
+    try {
+      return Integer.parseInt(argument);
+    } catch (NumberFormatException e) {
+      throw new InvalidArgumentException("The task number must be an int.");
+    }
   }
 
   /**
@@ -76,7 +107,7 @@ public class Shan {
    * @return farewell message for {@code bye}
    */
   private static String commandExit() {
-    return "Bye. Hope to see you again soon!";
+    return "Bye! See you soon.";
   }
 
   /**
@@ -84,10 +115,11 @@ public class Shan {
    *
    * @param taskName name of task to add
    * @return reply when adding task
+   * @throws MissingArgumentException if the task description is empty
    */
-  private static String commandAddToDo(String taskName) {
+  private static String commandAddToDo(String taskName) throws MissingArgumentException {
     if (taskName.isBlank()) {
-      return "The task description cannot be empty.";
+      throw new MissingArgumentException("The task description cannot be empty my guy.");
     }
     return addTask(new ToDo(taskName));
   }
@@ -97,15 +129,21 @@ public class Shan {
    *
    * @param arguments task description followed by {@code /by} and the deadline
    * @return reply when adding task
+   * @throws MissingArgumentException if the description, deadline, or delimiter
+   *                                  is missing
    */
-  private static String commandAddDeadline(String arguments) {
+  private static String commandAddDeadline(String arguments) throws MissingArgumentException {
+    if (arguments.isBlank()) {
+      throw new MissingArgumentException("The deadline description cannot be empty, else its not a deadline");
+    }
+
     String[] details = arguments.split("/by", 2);
 
     if (details.length < 2) {
-      return "Please specify a deadline using /by.";
+      throw new MissingArgumentException("Please specify a deadline using /by.");
     }
     if (details[0].isBlank() || details[1].isBlank()) {
-      return "The deadline description and date cannot be empty.";
+      throw new MissingArgumentException("The deadline description and date cannot be empty bruh.");
     }
 
     return addTask(new Deadline(details[0].trim(), details[1].trim()));
@@ -117,21 +155,25 @@ public class Shan {
    * @param arguments task description followed by {@code /from} and {@code /to}
    *                  values
    * @return reply when adding task
+   * @throws MissingArgumentException if the description, times, or delimiters are
+   *                                  missing
    */
-  private static String commandAddEvent(String arguments) {
-    String[] fromDetails = arguments.split("/from", 2);
+  private static String commandAddEvent(String arguments) throws MissingArgumentException {
+    if (arguments.isBlank()) {
+      throw new MissingArgumentException("The event description cannot be empty...");
+    }
 
+    String[] fromDetails = arguments.split("/from", 2);
     if (fromDetails.length < 2) {
-      return "Please specify the event start using /from.";
+      throw new MissingArgumentException("Specify the event start using /from.");
     }
 
     String[] toDetails = fromDetails[1].split("/to", 2);
-
     if (toDetails.length < 2) {
-      return "Please specify the event end using /to.";
+      throw new MissingArgumentException("Specify the event end using /to.");
     }
     if (fromDetails[0].isBlank() || toDetails[0].isBlank() || toDetails[1].isBlank()) {
-      return "The event description, start, and end cannot be empty.";
+      throw new MissingArgumentException("The event description, start, and end cannot be empty, lock in bro.");
     }
 
     return addTask(new Event(fromDetails[0].trim(), toDetails[0].trim(), toDetails[1].trim()));
@@ -167,10 +209,11 @@ public class Shan {
    *
    * @param idx task index to mark as done
    * @return reply when marked as done
+   * @throws InvalidArgumentException if the task index does not exist
    */
-  private static String commandMark(int idx) {
+  private static String commandMark(int idx) throws InvalidArgumentException {
     if (idx > taskIdx || idx < 1) {
-      return "Woopsies, this task does not exist!!";
+      throw new InvalidArgumentException("Woopsies, this task does not exist!!");
     }
     String res = taskList[idx - 1].markDone();
     return String.format("Well done! I have marked this task as done!\n  %s", res);
@@ -181,10 +224,11 @@ public class Shan {
    *
    * @param idx task index to unmark
    * @return reply when unmarked
+   * @throws InvalidArgumentException if the task index does not exist
    */
-  private static String commandUnmark(int idx) {
+  private static String commandUnmark(int idx) throws InvalidArgumentException {
     if (idx > taskIdx || idx < 1) {
-      return "oops, this task does not exist!!";
+      throw new InvalidArgumentException("oops, this task does not exist!!");
     }
     String res = taskList[idx - 1].unmarkDone();
     return String.format("What happened? I have unmarked this task as completed...\n  %s", res);
