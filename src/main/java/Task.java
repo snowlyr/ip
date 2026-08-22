@@ -1,9 +1,12 @@
-public class Task {
+/**
+ * Represents a task that can be marked as completed.
+ */
+public abstract class Task {
   private String taskName;
   private boolean markedDone = false;
 
   /**
-   * Constrcuts task
+   * Constructs a task.
    *
    * @param taskName name of task
    */
