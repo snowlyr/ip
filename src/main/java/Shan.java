@@ -7,7 +7,7 @@ public class Shan {
       + "\\___ \\| '_ \\ / _` | '_ \\\n"
       + " ___) | | | | (_| | | | |\n"
       + "|____/|_| |_|\\__,_|_| |_| \n";
-  private static String[] taskList = new String[100];
+  private static Task[] taskList = new Task[100];
   private static int taskIdx = 0;
 
   public static void main(String[] args) {
@@ -21,12 +21,16 @@ public class Shan {
 
     System.out.print("> ");
     while (sc.hasNextLine()) {
-      String command = sc.nextLine();
+      String inputLine = sc.nextLine();
+      String[] tokens = inputLine.split("\\s+");
+      String command = tokens[0];
 
       switch (command) {
         case "bye" -> sendMessage(commandExit());
         case "list" -> sendMessage(commandList());
-        default -> sendMessage(commandAdd(command));
+        case "mark" -> sendMessage(commandMark(Integer.parseInt(tokens[1])));
+        case "unmark" -> sendMessage(commandUnmark(Integer.parseInt(tokens[1])));
+        default -> sendMessage(commandAdd(inputLine));
       }
       if (command.equals("bye")) {
         break;
@@ -60,13 +64,13 @@ public class Shan {
   /**
    * Add a task to taskList
    *
-   * @param task task to add
+   * @param taskName name of task to add
    * @return reply when adding task
    */
-  private static String commandAdd(String task) {
-    taskList[taskIdx] = task;
+  private static String commandAdd(String taskName) {
+    taskList[taskIdx] = new Task(taskName);
     taskIdx++;
-    return String.format("added: %s", task);
+    return String.format("added: %s", taskName);
   }
 
   /**
@@ -80,5 +84,33 @@ public class Shan {
       res = res + String.format("%d. %s\n", i + 1, taskList[i].toString());
     }
     return res.substring(0, res.length() - 1);
+  }
+
+  /**
+   * Mark the specified task index as done
+   *
+   * @param idx task index to mark as done
+   * @return reply when marked as done
+   */
+  private static String commandMark(int idx) {
+    if (idx > taskIdx || idx < 1) {
+      return "Woopsies, this task does not exist!!";
+    }
+    String res = taskList[idx - 1].markDone();
+    return String.format("Well done! I have marked this task as done!\n  %s", res);
+  }
+
+  /**
+   * Unmark the specified task index as done
+   *
+   * @param idx task index to unmark
+   * @return reply when unmarked
+   */
+  private static String commandUnmark(int idx) {
+    if (idx > taskIdx || idx < 1) {
+      return "oops, this task does not exist!!";
+    }
+    String res = taskList[idx - 1].unmarkDone();
+    return String.format("What happened? I have unmarked this task as completed...\n  %s", res);
   }
 }
