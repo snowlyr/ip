@@ -1,10 +1,25 @@
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.Scanner;
 
 /**
  * Runs the Shan chatbot.
  */
 public class Shan {
+  /**
+   * Commands understood by Shan.
+   */
+  private enum CommandType {
+    BYE,
+    LIST,
+    MARK,
+    UNMARK,
+    DELETE,
+    TODO,
+    DEADLINE,
+    EVENT
+  }
+
   private static final String DIVIDER = "____________________________________________________________";
   private static final String BANNER = " ____  _\n"
       + "/ ___|| |__   __ _ _ __\n"
@@ -65,20 +80,34 @@ public class Shan {
     }
 
     String[] tokens = inputLine.split("\\s+", 2);
-    String command = tokens[0];
+    CommandType command = parseCommand(tokens[0]);
     String arguments = tokens.length == 2 ? tokens[1] : "";
 
     return switch (command) {
-      case "bye" -> commandExit();
-      case "list" -> commandList();
-      case "mark" -> commandMark(parseTaskNumber(arguments));
-      case "unmark" -> commandUnmark(parseTaskNumber(arguments));
-      case "delete" -> commandDelete(parseTaskNumber(arguments));
-      case "todo" -> commandAddToDo(arguments);
-      case "deadline" -> commandAddDeadline(arguments);
-      case "event" -> commandAddEvent(arguments);
-      default -> throw new InvalidCommandException("I don't understand bro.");
+      case BYE -> commandExit();
+      case LIST -> commandList();
+      case MARK -> commandMark(parseTaskNumber(arguments));
+      case UNMARK -> commandUnmark(parseTaskNumber(arguments));
+      case DELETE -> commandDelete(parseTaskNumber(arguments));
+      case TODO -> commandAddToDo(arguments);
+      case DEADLINE -> commandAddDeadline(arguments);
+      case EVENT -> commandAddEvent(arguments);
     };
+  }
+
+  /**
+   * Converts user input into a supported command type.
+   *
+   * @param command command word entered by the user
+   * @return matching command type
+   * @throws InvalidCommandException if the command is unknown
+   */
+  private static CommandType parseCommand(String command) throws InvalidCommandException {
+    try {
+      return CommandType.valueOf(command.toUpperCase(Locale.ROOT));
+    } catch (IllegalArgumentException e) {
+      throw new InvalidCommandException("I don't understand bro.");
+    }
   }
 
   /**
