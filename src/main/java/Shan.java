@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Scanner;
 
 /**
@@ -10,8 +11,7 @@ public class Shan {
       + "\\___ \\| '_ \\ / _` | '_ \\\n"
       + " ___) | | | | (_| | | | |\n"
       + "|____/|_| |_|\\__,_|_| |_| \n";
-  private static Task[] taskList = new Task[100];
-  private static int taskIdx = 0;
+  private static final ArrayList<Task> taskList = new ArrayList<>();
 
   public static void main(String[] args) {
     Scanner sc = new Scanner(System.in);
@@ -73,6 +73,7 @@ public class Shan {
       case "list" -> commandList();
       case "mark" -> commandMark(parseTaskNumber(arguments));
       case "unmark" -> commandUnmark(parseTaskNumber(arguments));
+      case "delete" -> commandDelete(parseTaskNumber(arguments));
       case "todo" -> commandAddToDo(arguments);
       case "deadline" -> commandAddDeadline(arguments);
       case "event" -> commandAddEvent(arguments);
@@ -186,9 +187,8 @@ public class Shan {
    * @return reply confirming that the task was added
    */
   private static String addTask(Task task) {
-    taskList[taskIdx] = task;
-    taskIdx++;
-    return String.format("I Gotchu. I've added this:\n  %s\nNow you have %d tasks.", task, taskIdx);
+    taskList.add(task);
+    return String.format("I Gotchu. I've added this:\n  %s\nNow you have %d tasks.", task, taskList.size());
   }
 
   /**
@@ -198,8 +198,8 @@ public class Shan {
    */
   private static String commandList() {
     StringBuilder res = new StringBuilder("Here are the tasks in your list:");
-    for (int i = 0; i < taskIdx; i++) {
-      res.append(String.format("\n%d.%s", i + 1, taskList[i]));
+    for (int i = 0; i < taskList.size(); i++) {
+      res.append(String.format("\n%d.%s", i + 1, taskList.get(i)));
     }
     return res.toString();
   }
@@ -212,10 +212,10 @@ public class Shan {
    * @throws InvalidArgumentException if the task index does not exist
    */
   private static String commandMark(int idx) throws InvalidArgumentException {
-    if (idx > taskIdx || idx < 1) {
+    if (idx > taskList.size() || idx < 1) {
       throw new InvalidArgumentException("Woopsies, this task does not exist!!");
     }
-    String res = taskList[idx - 1].markDone();
+    String res = taskList.get(idx - 1).markDone();
     return String.format("Well done! I have marked this task as done!\n  %s", res);
   }
 
@@ -227,10 +227,26 @@ public class Shan {
    * @throws InvalidArgumentException if the task index does not exist
    */
   private static String commandUnmark(int idx) throws InvalidArgumentException {
-    if (idx > taskIdx || idx < 1) {
+    if (idx > taskList.size() || idx < 1) {
       throw new InvalidArgumentException("oops, this task does not exist!!");
     }
-    String res = taskList[idx - 1].unmarkDone();
+    String res = taskList.get(idx - 1).unmarkDone();
     return String.format("What happened? I have unmarked this task as completed...\n  %s", res);
+  }
+
+  /**
+   * Deletes the task at the specified index.
+   *
+   * @param idx task index to delete
+   * @return reply confirming which task was deleted
+   * @throws InvalidArgumentException if the task index does not exist
+   */
+  private static String commandDelete(int idx) throws InvalidArgumentException {
+    if (idx > taskList.size() || idx < 1) {
+      throw new InvalidArgumentException("Woopsies, this task does not exist!!");
+    }
+    Task removedTask = taskList.remove(idx - 1);
+    return String.format("Noted. I've removed this task:\n  %s\nNow you have %d tasks.",
+        removedTask, taskList.size());
   }
 }

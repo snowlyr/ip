@@ -95,6 +95,114 @@ Shan: Bye! See you soon.
 ____________________________________________________________
 ```
 
+### UI-004: Delete tasks
+
+**Aim:** Verify that deleting removes the selected task, renumbers the remaining list, updates the task count, and handles invalid arguments.
+
+**Inputs:**
+
+1. `todo read book`
+2. `deadline return book /by Sunday`
+3. `delete 1`
+4. `list`
+5. `delete 1`
+6. `list`
+7. `delete 1`
+8. `delete`
+9. `delete one`
+10. `bye`
+
+**Expected outputs:**
+
+1. Output caused by `todo read book`:
+
+```text
+____________________________________________________________
+Shan: I Gotchu. I've added this:
+  [T][ ] read book
+Now you have 1 tasks.
+____________________________________________________________
+```
+
+2. Output caused by `deadline return book /by Sunday`:
+
+```text
+____________________________________________________________
+Shan: I Gotchu. I've added this:
+  [D][ ] return book (by: Sunday)
+Now you have 2 tasks.
+____________________________________________________________
+```
+
+3. Output caused by `delete 1`:
+
+```text
+____________________________________________________________
+Shan: Noted. I've removed this task:
+  [T][ ] read book
+Now you have 1 tasks.
+____________________________________________________________
+```
+
+4. Output caused by `list`:
+
+```text
+____________________________________________________________
+Shan: Here are the tasks in your list:
+1.[D][ ] return book (by: Sunday)
+____________________________________________________________
+```
+
+5. Output caused by `delete 1`:
+
+```text
+____________________________________________________________
+Shan: Noted. I've removed this task:
+  [D][ ] return book (by: Sunday)
+Now you have 0 tasks.
+____________________________________________________________
+```
+
+6. Output caused by `list`:
+
+```text
+____________________________________________________________
+Shan: Here are the tasks in your list:
+____________________________________________________________
+```
+
+7. Output caused by `delete 1`:
+
+```text
+____________________________________________________________
+Shan: Woopsies, this task does not exist!!
+____________________________________________________________
+```
+
+8. Output caused by `delete`:
+
+```text
+____________________________________________________________
+Shan: Specify a task number.
+____________________________________________________________
+```
+
+9. Output caused by `delete one`:
+
+```text
+____________________________________________________________
+Shan: The task number must be an int.
+____________________________________________________________
+```
+
+10. Output caused by `bye`:
+
+```text
+____________________________________________________________
+Shan: Bye! See you soon.
+____________________________________________________________
+```
+
 ### UI-002: Reject malformed task commands
 
 **Aim:** Verify that missing descriptions and task delimiters produce helpful messages without adding tasks or terminating Shan.
