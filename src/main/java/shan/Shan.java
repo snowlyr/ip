@@ -1,6 +1,9 @@
+package shan;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Scanner;
@@ -25,13 +28,21 @@ public class Shan {
 
     private static final String DIVIDER = "____________________________________________________________";
     private static final String BANNER = " ____  _\n"
-    + "/ ___|| |__   __ _ _ __\n"
-    + "\\___ \\| '_ \\ / _` | '_ \\\n"
-    + " ___) | | | | (_| | | | |\n"
-    + "|____/|_| |_|\\__,_|_| |_| \n";
+            + "/ ___|| |__   __ _ _ __\n"
+            + "\\___ \\| '_ \\ / _` | '_ \\\n"
+            + " ___) | | | | (_| | | | |\n"
+            + "|____/|_| |_|\\__,_|_| |_| \n";
     private static final Path DATA_FILE = Path.of("data", "shan.txt");
-    private static final ArrayList<Task> taskList = new ArrayList<>();
+    private static final ArrayList<Task> tasks = new ArrayList<>();
 
+    private Shan() {
+    }
+
+    /**
+     * Starts Shan and processes commands from standard input.
+     *
+     * @param args Command-line arguments; unused.
+     */
     public static void main(String[] args) {
         String startupWarning = null;
         try {
@@ -41,10 +52,11 @@ public class Shan {
                     "Warning: I skipped %d invalid task %s in data/shan.txt.",
                     skippedTasks, skippedTasks == 1 ? "entry" : "entries");
             }
-        } catch (DataFileException e) {
-            startupWarning = e.getMessage();
+        } catch (DataFileException exception) {
+            startupWarning = exception.getMessage();
         }
-        Scanner sc = new Scanner(System.in);
+
+        Scanner scanner = new Scanner(System.in);
 
         System.out.println(DIVIDER);
         System.out.println(BANNER);
@@ -55,12 +67,12 @@ public class Shan {
             sendMessage(startupWarning);
         }
 
-        while (sc.hasNextLine()) {
-            String inputLine = sc.nextLine().trim();
+        while (scanner.hasNextLine()) {
+            String inputLine = scanner.nextLine().trim();
             try {
                 sendMessage(reply(inputLine));
-            } catch (ShanException e) {
-                sendMessage(e.getMessage());
+            } catch (ShanException exception) {
+                sendMessage(exception.getMessage());
             }
 
             if (inputLine.equals("bye")) {
@@ -68,13 +80,13 @@ public class Shan {
             }
         }
 
-        sc.close();
+        scanner.close();
     }
 
     /**
      * Prints a message using Shan's standard response formatting.
      *
-     * @param message message to print
+     * @param message Message to print.
      */
     private static void sendMessage(String message) {
         System.out.println(DIVIDER);
@@ -85,15 +97,16 @@ public class Shan {
     /**
      * Returns Shan's reply to a user command.
      *
-     * @param inputLine command entered by the user
-     * @return Shan's reply
-     * @throws InvalidCommandException  if the command is blank or unknown
-     * @throws MissingArgumentException if a required argument is missing
-     * @throws InvalidArgumentException if an argument has an invalid value
-     * @throws DataFileException        if the task list cannot be saved
+     * @param inputLine Command entered by the user.
+     * @return Shan's reply.
+     * @throws InvalidCommandException  If the command is blank or unknown.
+     * @throws MissingArgumentException If a required argument is missing.
+     * @throws InvalidArgumentException If an argument has an invalid value.
+     * @throws DataFileException        If the task list cannot be saved.
      */
     private static String reply(String inputLine)
-    throws InvalidCommandException, MissingArgumentException, InvalidArgumentException, DataFileException {
+            throws InvalidCommandException, MissingArgumentException,
+            InvalidArgumentException, DataFileException {
         if (inputLine.isBlank()) {
             throw new InvalidCommandException("Enter a command dood.");
         }
@@ -117,14 +130,14 @@ public class Shan {
     /**
      * Converts user input into a supported command type.
      *
-     * @param command command word entered by the user
-     * @return matching command type
-     * @throws InvalidCommandException if the command is unknown
+     * @param command Command word entered by the user.
+     * @return Matching command type.
+     * @throws InvalidCommandException If the command is unknown.
      */
     private static CommandType parseCommand(String command) throws InvalidCommandException {
         try {
             return CommandType.valueOf(command.toUpperCase(Locale.ROOT));
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException exception) {
             throw new InvalidCommandException("I don't understand bro.");
         }
     }
@@ -132,20 +145,20 @@ public class Shan {
     /**
      * Parses a task number supplied to a mark or unmark command.
      *
-     * @param argument task number entered by the user
-     * @return parsed task number
-     * @throws MissingArgumentException if the task number is missing
-     * @throws InvalidArgumentException if the task number is not an integer
+     * @param argument Task number entered by the user.
+     * @return Parsed task number.
+     * @throws MissingArgumentException If the task number is missing.
+     * @throws InvalidArgumentException If the task number is not an integer.
      */
     private static int parseTaskNumber(String argument)
-    throws MissingArgumentException, InvalidArgumentException {
+            throws MissingArgumentException, InvalidArgumentException {
         if (argument.isBlank()) {
             throw new MissingArgumentException("Specify a task number.");
         }
 
         try {
             return Integer.parseInt(argument);
-        } catch (NumberFormatException e) {
+        } catch (NumberFormatException exception) {
             throw new InvalidArgumentException("The task number must be an int.");
         }
     }
@@ -153,7 +166,7 @@ public class Shan {
     /**
      * Returns the farewell message.
      *
-     * @return farewell message for {@code bye}
+     * @return Farewell message for {@code bye}.
      */
     private static String commandExit() {
         return "Bye! See you soon.";
@@ -162,14 +175,14 @@ public class Shan {
     /**
      * Adds a ToDo task.
      *
-     * @param taskName name of task to add
-     * @return reply when adding task
-     * @throws MissingArgumentException if the task description is empty
-     * @throws InvalidArgumentException if the task contains the save-file delimiter
-     * @throws DataFileException        if the task list cannot be saved
+     * @param taskName Name of the task to add.
+     * @return Reply confirming the added task.
+     * @throws MissingArgumentException If the task description is empty.
+     * @throws InvalidArgumentException If the task contains the save-file delimiter.
+     * @throws DataFileException        If the task list cannot be saved.
      */
     private static String commandAddToDo(String taskName)
-    throws MissingArgumentException, InvalidArgumentException, DataFileException {
+            throws MissingArgumentException, InvalidArgumentException, DataFileException {
         if (taskName.isBlank()) {
             throw new MissingArgumentException("The task description cannot be empty my guy.");
         }
@@ -180,46 +193,47 @@ public class Shan {
     /**
      * Adds a Deadline task.
      *
-     * @param arguments task description followed by {@code /by} and the deadline
-     * @return reply when adding task
-     * @throws MissingArgumentException if the description, deadline, or delimiter
-     *                                  is missing
-     * @throws InvalidArgumentException if a task field contains the save-file
-     *                                  delimiter
-     * @throws DataFileException        if the task list cannot be saved
+     * @param arguments Task description followed by {@code /by} and the deadline.
+     * @return Reply confirming the added task.
+     * @throws MissingArgumentException If the description, deadline, or delimiter
+     *                                  is missing.
+     * @throws InvalidArgumentException If a task field contains the save-file
+     *                                  delimiter.
+     * @throws DataFileException        If the task list cannot be saved.
      */
     private static String commandAddDeadline(String arguments)
-    throws MissingArgumentException, InvalidArgumentException, DataFileException {
+            throws MissingArgumentException, InvalidArgumentException, DataFileException {
         if (arguments.isBlank()) {
             throw new MissingArgumentException("The deadline description cannot be empty, else its not a deadline");
         }
 
-        String[] details = arguments.split("/by", 2);
+        String[] deadlineDetails = arguments.split("/by", 2);
 
-        if (details.length < 2) {
+        if (deadlineDetails.length < 2) {
             throw new MissingArgumentException("Please specify a deadline using /by.");
         }
-        if (details[0].isBlank() || details[1].isBlank()) {
+        if (deadlineDetails[0].isBlank() || deadlineDetails[1].isBlank()) {
             throw new MissingArgumentException("The deadline description and date cannot be empty bruh.");
         }
 
-        String taskName = details[0].trim();
-        String endDate = details[1].trim();
-        validateFileFields(taskName, endDate);
+        String taskName = deadlineDetails[0].trim();
+        String endDateInput = deadlineDetails[1].trim();
+        validateFileFields(taskName, endDateInput);
+        LocalDateTime endDate = DateTimeParser.parse(endDateInput);
         return addTask(new Deadline(taskName, endDate));
     }
 
     /**
      * Adds an Event task.
      *
-     * @param arguments task description followed by {@code /from} and {@code /to}
+     * @param arguments Task description followed by {@code /from} and {@code /to}
      *                  values
-     * @return reply when adding task
-     * @throws MissingArgumentException if the description, times, or delimiters are
-     *                                  missing
-     * @throws InvalidArgumentException if a task field contains the save-file
-     *                                  delimiter
-     * @throws DataFileException        if the task list cannot be saved
+     * @return Reply confirming the added task.
+     * @throws MissingArgumentException If the description, times, or delimiters are
+     *                                  missing.
+     * @throws InvalidArgumentException If a task field contains the save-file
+     *                                  delimiter.
+     * @throws DataFileException        If the task list cannot be saved.
      */
     private static String commandAddEvent(String arguments)
             throws MissingArgumentException, InvalidArgumentException, DataFileException {
@@ -241,17 +255,22 @@ public class Shan {
         }
 
         String taskName = fromDetails[0].trim();
-        String startDate = toDetails[0].trim();
-        String endDate = toDetails[1].trim();
-        validateFileFields(taskName, startDate, endDate);
+        String startDateInput = toDetails[0].trim();
+        String endDateInput = toDetails[1].trim();
+        validateFileFields(taskName, startDateInput, endDateInput);
+        LocalDateTime startDate = DateTimeParser.parse(startDateInput);
+        LocalDateTime endDate = DateTimeParser.parse(endDateInput);
+        if (!endDate.isAfter(startDate)) {
+            throw new InvalidArgumentException("The event end must be after its start.");
+        }
         return addTask(new Event(taskName, startDate, endDate));
     }
 
     /**
      * Rejects values containing the delimiter reserved by the save-file format.
      *
-     * @param fields task fields to validate
-     * @throws InvalidArgumentException if a field contains {@code |}
+     * @param fields Task fields to validate.
+     * @throws InvalidArgumentException If a field contains {@code |}.
      */
     private static void validateFileFields(String... fields) throws InvalidArgumentException {
         for (String field : fields) {
@@ -264,35 +283,35 @@ public class Shan {
     /**
      * Adds a task to the task list.
      *
-     * @param task task to add
-     * @return reply confirming that the task was added
-     * @throws DataFileException if the task list cannot be saved
+     * @param task Task to add.
+     * @return Reply confirming that the task was added.
+     * @throws DataFileException If the task list cannot be saved.
      */
     private static String addTask(Task task) throws DataFileException {
-        taskList.add(task);
+        tasks.add(task);
         try {
             saveTasks();
-        } catch (DataFileException e) {
-            taskList.remove(taskList.size() - 1);
-            throw e;
+        } catch (DataFileException exception) {
+            tasks.remove(tasks.size() - 1);
+            throw exception;
         }
-        return String.format("I Gotchu. I've added this:\n  %s\nNow you have %d tasks.", task, taskList.size());
+        return String.format("I Gotchu. I've added this:\n  %s\nNow you have %d tasks.", task, tasks.size());
     }
 
     /**
      * Writes the current task list to the data file.
      *
-     * @throws DataFileException if the data directory or file cannot be written
+     * @throws DataFileException If the data directory or file cannot be written.
      */
     private static void saveTasks() throws DataFileException {
         try {
             Files.createDirectories(DATA_FILE.getParent());
             ArrayList<String> lines = new ArrayList<>();
-            for (Task task : taskList) {
+            for (Task task : tasks) {
                 lines.add(task.toFileString());
             }
             Files.write(DATA_FILE, lines);
-        } catch (IOException | SecurityException e) {
+        } catch (IOException | SecurityException exception) {
             throw new DataFileException("I couldn't save your tasks to data/shan.txt.");
         }
     }
@@ -300,11 +319,11 @@ public class Shan {
     /**
      * Loads valid tasks from the data file when it exists.
      *
-     * @return number of invalid nonblank entries that were skipped
-     * @throws DataFileException if the data file cannot be read
+     * @return Number of invalid nonblank entries that were skipped.
+     * @throws DataFileException If the data file cannot be read.
      */
     private static int loadTasks() throws DataFileException {
-        taskList.clear();
+        tasks.clear();
         try {
             if (Files.notExists(DATA_FILE)) {
                 return 0;
@@ -325,11 +344,11 @@ public class Shan {
                     skippedTasks++;
                     continue;
                 }
-                taskList.add(task);
+                tasks.add(task);
             }
             return skippedTasks;
-        } catch (IOException | SecurityException e) {
-            taskList.clear();
+        } catch (IOException | SecurityException exception) {
+            tasks.clear();
             throw new DataFileException(
                     "I couldn't read data/shan.txt. Starting with an empty task list.");
         }
@@ -338,8 +357,8 @@ public class Shan {
     /**
      * Converts one valid save-file entry into a task.
      *
-     * @param line save-file entry
-     * @return parsed task, or {@code null} when the entry is invalid
+     * @param line Save-file entry.
+     * @return Parsed task, or {@code null} when the entry is invalid.
      */
     private static Task parseSavedTask(String line) {
         String[] fields = line.trim().split("\\s*\\|\\s*", -1);
@@ -347,13 +366,13 @@ public class Shan {
             return null;
         }
 
-        int expectedFields = switch (fields[0]) {
+        int expectedFieldCount = switch (fields[0]) {
             case "T" -> 3;
             case "D" -> 4;
             case "E" -> 5;
             default -> -1;
         };
-        if (fields.length != expectedFields) {
+        if (fields.length != expectedFieldCount) {
             return null;
         }
         for (int i = 2; i < fields.length; i++) {
@@ -362,12 +381,17 @@ public class Shan {
             }
         }
 
-        Task task = switch (fields[0]) {
-            case "T" -> new ToDo(fields[2]);
-            case "D" -> new Deadline(fields[2], fields[3]);
-            case "E" -> new Event(fields[2], fields[3], fields[4]);
-            default -> throw new AssertionError("Task type was already validated");
-        };
+        Task task;
+        try {
+            task = switch (fields[0]) {
+                case "T" -> new ToDo(fields[2]);
+                case "D" -> new Deadline(fields[2], DateTimeParser.parse(fields[3]));
+                case "E" -> parseSavedEvent(fields);
+                default -> throw new AssertionError("Task type was already validated");
+            };
+        } catch (InvalidArgumentException exception) {
+            return null;
+        }
         if (fields[1].equals("1")) {
             task.markDone();
         }
@@ -375,90 +399,106 @@ public class Shan {
     }
 
     /**
-     * Returns the list of tasks
+     * Parses an Event from fields whose type, status, and field count are valid.
      *
-     * @return enumerated list of tasks
+     * @param fields Serialized Event fields.
+     * @return Parsed Event.
+     * @throws InvalidArgumentException If a date-time is invalid or the end is not after the start.
      */
-    private static String commandList() {
-        StringBuilder res = new StringBuilder("Here are the tasks in your list:");
-        for (int i = 0; i < taskList.size(); i++) {
-            res.append(String.format("\n%d.%s", i + 1, taskList.get(i)));
+    private static Event parseSavedEvent(String[] fields) throws InvalidArgumentException {
+        LocalDateTime startDate = DateTimeParser.parse(fields[3]);
+        LocalDateTime endDate = DateTimeParser.parse(fields[4]);
+        if (!endDate.isAfter(startDate)) {
+            throw new InvalidArgumentException("The event end must be after its start.");
         }
-        return res.toString();
+        return new Event(fields[2], startDate, endDate);
     }
 
     /**
-     * Mark the specified task index as done
+     * Returns the list of tasks.
      *
-     * @param idx task index to mark as done
-     * @return reply when marked as done
-     * @throws InvalidArgumentException if the task index does not exist
-     * @throws DataFileException        if the task list cannot be saved
+     * @return Enumerated list of tasks.
      */
-    private static String commandMark(int idx) throws InvalidArgumentException, DataFileException {
-        if (idx > taskList.size() || idx < 1) {
+    private static String commandList() {
+        StringBuilder result = new StringBuilder("Here are the tasks in your list:");
+        for (int i = 0; i < tasks.size(); i++) {
+            result.append(String.format("\n%d.%s", i + 1, tasks.get(i)));
+        }
+        return result.toString();
+    }
+
+    /**
+     * Marks the specified task as done.
+     *
+     * @param taskNumber Number of the task to mark as done.
+     * @return Reply confirming the marked task.
+     * @throws InvalidArgumentException If the task number does not exist.
+     * @throws DataFileException        If the task list cannot be saved.
+     */
+    private static String commandMark(int taskNumber) throws InvalidArgumentException, DataFileException {
+        if (taskNumber > tasks.size() || taskNumber < 1) {
             throw new InvalidArgumentException("Woopsies, this task does not exist!!");
         }
-        Task task = taskList.get(idx - 1);
+        Task task = tasks.get(taskNumber - 1);
         boolean wasDone = task.isDone();
-        String res = task.markDone();
+        String taskDisplay = task.markDone();
         try {
             saveTasks();
-        } catch (DataFileException e) {
+        } catch (DataFileException exception) {
             if (!wasDone) {
                 task.unmarkDone();
             }
-            throw e;
+            throw exception;
         }
-        return String.format("Well done! I have marked this task as done!\n  %s", res);
+        return String.format("Well done! I have marked this task as done!\n  %s", taskDisplay);
     }
 
     /**
-     * Unmark the specified task index as done
+     * Marks the specified task as not done.
      *
-     * @param idx task index to unmark
-     * @return reply when unmarked
-     * @throws InvalidArgumentException if the task index does not exist
-     * @throws DataFileException        if the task list cannot be saved
+     * @param taskNumber Number of the task to mark as not done.
+     * @return Reply confirming the unmarked task.
+     * @throws InvalidArgumentException If the task number does not exist.
+     * @throws DataFileException        If the task list cannot be saved.
      */
-    private static String commandUnmark(int idx) throws InvalidArgumentException, DataFileException {
-        if (idx > taskList.size() || idx < 1) {
+    private static String commandUnmark(int taskNumber) throws InvalidArgumentException, DataFileException {
+        if (taskNumber > tasks.size() || taskNumber < 1) {
             throw new InvalidArgumentException("oops, this task does not exist!!");
         }
-        Task task = taskList.get(idx - 1);
+        Task task = tasks.get(taskNumber - 1);
         boolean wasDone = task.isDone();
-        String res = task.unmarkDone();
+        String taskDisplay = task.unmarkDone();
         try {
             saveTasks();
-        } catch (DataFileException e) {
+        } catch (DataFileException exception) {
             if (wasDone) {
                 task.markDone();
             }
-            throw e;
+            throw exception;
         }
-        return String.format("What happened? I have unmarked this task as completed...\n  %s", res);
+        return String.format("What happened? I have unmarked this task as completed...\n  %s", taskDisplay);
     }
 
     /**
      * Deletes the task at the specified index.
      *
-     * @param idx task index to delete
-     * @return reply confirming which task was deleted
-     * @throws InvalidArgumentException if the task index does not exist
-     * @throws DataFileException        if the task list cannot be saved
+     * @param taskNumber Number of the task to delete.
+     * @return Reply confirming which task was deleted.
+     * @throws InvalidArgumentException If the task number does not exist.
+     * @throws DataFileException        If the task list cannot be saved.
      */
-    private static String commandDelete(int idx) throws InvalidArgumentException, DataFileException {
-        if (idx > taskList.size() || idx < 1) {
+    private static String commandDelete(int taskNumber) throws InvalidArgumentException, DataFileException {
+        if (taskNumber > tasks.size() || taskNumber < 1) {
             throw new InvalidArgumentException("Woopsies, this task does not exist!!");
         }
-        Task removedTask = taskList.remove(idx - 1);
+        Task removedTask = tasks.remove(taskNumber - 1);
         try {
             saveTasks();
-        } catch (DataFileException e) {
-            taskList.add(idx - 1, removedTask);
-            throw e;
+        } catch (DataFileException exception) {
+            tasks.add(taskNumber - 1, removedTask);
+            throw exception;
         }
         return String.format("Noted. I've removed this task:\n  %s\nNow you have %d tasks.",
-                removedTask, taskList.size());
+                removedTask, tasks.size());
     }
 }

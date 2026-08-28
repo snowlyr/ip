@@ -5,8 +5,8 @@ This file is the source of truth for Shan's console UI tests. Test cases run in 
 ## Test configuration
 
 - Required Java version: 25
-- Compile command: `javac -d <temporary-class-directory> src/main/java/*.java`
-- Run command: `java -cp <temporary-class-directory> Shan`
+- Compile command: `javac -d <temporary-class-directory> src/main/java/shan/*.java`
+- Run command: `java -cp <temporary-class-directory> shan.Shan`
 - Data file: `data/shan.txt`
 - Data setup: remove the data file before each test case unless the test case
   specifies initial file contents
@@ -23,8 +23,8 @@ This file is the source of truth for Shan's console UI tests. Test cases run in 
 
 1. `todo read book`
 2. `mark 1`
-3. `deadline return book /by Sunday`
-4. `event project meeting /from Mon 2pm /to 4pm`
+3. `deadline return book /by 2019-12-02 18:00`
+4. `event project meeting /from 2019-12-03 14:00 /to 2019-12-03 16:00`
 5. `unmark 1`
 6. `list`
 7. `bye`
@@ -50,22 +50,22 @@ Shan: Well done! I have marked this task as done!
 ____________________________________________________________
 ```
 
-3. Output caused by `deadline return book /by Sunday`:
+3. Output caused by `deadline return book /by 2019-12-02 18:00`:
 
 ```text
 ____________________________________________________________
 Shan: I Gotchu. I've added this:
-  [D][ ] return book (by: Sunday)
+  [D][ ] return book (by: Dec 02 2019, 6:00 PM)
 Now you have 2 tasks.
 ____________________________________________________________
 ```
 
-4. Output caused by `event project meeting /from Mon 2pm /to 4pm`:
+4. Output caused by `event project meeting /from 2019-12-03 14:00 /to 2019-12-03 16:00`:
 
 ```text
 ____________________________________________________________
 Shan: I Gotchu. I've added this:
-  [E][ ] project meeting (from: Mon 2pm to: 4pm)
+  [E][ ] project meeting (from: Dec 03 2019, 2:00 PM to: Dec 03 2019, 4:00 PM)
 Now you have 3 tasks.
 ____________________________________________________________
 ```
@@ -85,8 +85,8 @@ ____________________________________________________________
 ____________________________________________________________
 Shan: Here are the tasks in your list:
 1.[T][ ] read book
-2.[D][ ] return book (by: Sunday)
-3.[E][ ] project meeting (from: Mon 2pm to: 4pm)
+2.[D][ ] return book (by: Dec 02 2019, 6:00 PM)
+3.[E][ ] project meeting (from: Dec 03 2019, 2:00 PM to: Dec 03 2019, 4:00 PM)
 ____________________________________________________________
 ```
 
@@ -106,8 +106,8 @@ ____________________________________________________________
 
 ```text
 T | 1 | read book
-D | 0 | return book | Sunday
-E | 0 | project meeting | Mon 2pm | 4pm
+D | 0 | return book | 2019-12-02 18:00
+E | 0 | project meeting | 2019-12-03 14:00 | 2019-12-03 16:00
 ```
 
 **Inputs:**
@@ -123,8 +123,8 @@ E | 0 | project meeting | Mon 2pm | 4pm
 ____________________________________________________________
 Shan: Here are the tasks in your list:
 1.[T][X] read book
-2.[D][ ] return book (by: Sunday)
-3.[E][ ] project meeting (from: Mon 2pm to: 4pm)
+2.[D][ ] return book (by: Dec 02 2019, 6:00 PM)
+3.[E][ ] project meeting (from: Dec 03 2019, 2:00 PM to: Dec 03 2019, 4:00 PM)
 ____________________________________________________________
 ```
 
@@ -143,7 +143,7 @@ ____________________________________________________________
 **Inputs:**
 
 1. `todo read book`
-2. `deadline return book /by Sunday`
+2. `deadline return book /by 2019-12-02 18:00`
 3. `delete 1`
 4. `list`
 5. `delete 1`
@@ -165,12 +165,12 @@ Now you have 1 tasks.
 ____________________________________________________________
 ```
 
-2. Output caused by `deadline return book /by Sunday`:
+2. Output caused by `deadline return book /by 2019-12-02 18:00`:
 
 ```text
 ____________________________________________________________
 Shan: I Gotchu. I've added this:
-  [D][ ] return book (by: Sunday)
+  [D][ ] return book (by: Dec 02 2019, 6:00 PM)
 Now you have 2 tasks.
 ____________________________________________________________
 ```
@@ -190,7 +190,7 @@ ____________________________________________________________
 ```text
 ____________________________________________________________
 Shan: Here are the tasks in your list:
-1.[D][ ] return book (by: Sunday)
+1.[D][ ] return book (by: Dec 02 2019, 6:00 PM)
 ____________________________________________________________
 ```
 
@@ -199,7 +199,7 @@ ____________________________________________________________
 ```text
 ____________________________________________________________
 Shan: Noted. I've removed this task:
-  [D][ ] return book (by: Sunday)
+  [D][ ] return book (by: Dec 02 2019, 6:00 PM)
 Now you have 0 tasks.
 ____________________________________________________________
 ```
@@ -251,8 +251,8 @@ ____________________________________________________________
 **Inputs:**
 
 1. `todo read book`
-2. `deadline return book /by Sunday`
-3. `event project meeting /from Mon 2pm /to 4pm`
+2. `deadline return book /by 2019-12-02 18:00`
+3. `event project meeting /from 2019-12-03 14:00 /to 2019-12-03 16:00`
 4. `mark 1`
 5. `delete 2`
 6. `bye`
@@ -269,22 +269,22 @@ Now you have 1 tasks.
 ____________________________________________________________
 ```
 
-2. Output caused by `deadline return book /by Sunday`:
+2. Output caused by `deadline return book /by 2019-12-02 18:00`:
 
 ```text
 ____________________________________________________________
 Shan: I Gotchu. I've added this:
-  [D][ ] return book (by: Sunday)
+  [D][ ] return book (by: Dec 02 2019, 6:00 PM)
 Now you have 2 tasks.
 ____________________________________________________________
 ```
 
-3. Output caused by `event project meeting /from Mon 2pm /to 4pm`:
+3. Output caused by `event project meeting /from 2019-12-03 14:00 /to 2019-12-03 16:00`:
 
 ```text
 ____________________________________________________________
 Shan: I Gotchu. I've added this:
-  [E][ ] project meeting (from: Mon 2pm to: 4pm)
+  [E][ ] project meeting (from: Dec 03 2019, 2:00 PM to: Dec 03 2019, 4:00 PM)
 Now you have 3 tasks.
 ____________________________________________________________
 ```
@@ -303,7 +303,7 @@ ____________________________________________________________
 ```text
 ____________________________________________________________
 Shan: Noted. I've removed this task:
-  [D][ ] return book (by: Sunday)
+  [D][ ] return book (by: Dec 02 2019, 6:00 PM)
 Now you have 2 tasks.
 ____________________________________________________________
 ```
@@ -324,34 +324,34 @@ ____________________________________________________________
 T | 0 | read book
 ```
 
-2. After `deadline return book /by Sunday`:
+2. After `deadline return book /by 2019-12-02 18:00`:
 
 ```text
 T | 0 | read book
-D | 0 | return book | Sunday
+D | 0 | return book | 2019-12-02 18:00
 ```
 
-3. After `event project meeting /from Mon 2pm /to 4pm`:
+3. After `event project meeting /from 2019-12-03 14:00 /to 2019-12-03 16:00`:
 
 ```text
 T | 0 | read book
-D | 0 | return book | Sunday
-E | 0 | project meeting | Mon 2pm | 4pm
+D | 0 | return book | 2019-12-02 18:00
+E | 0 | project meeting | 2019-12-03 14:00 | 2019-12-03 16:00
 ```
 
 4. After `mark 1`:
 
 ```text
 T | 1 | read book
-D | 0 | return book | Sunday
-E | 0 | project meeting | Mon 2pm | 4pm
+D | 0 | return book | 2019-12-02 18:00
+E | 0 | project meeting | 2019-12-03 14:00 | 2019-12-03 16:00
 ```
 
 5. After `delete 2`:
 
 ```text
 T | 1 | read book
-E | 0 | project meeting | Mon 2pm | 4pm
+E | 0 | project meeting | 2019-12-03 14:00 | 2019-12-03 16:00
 ```
 
 ### UI-002: Reject malformed task commands
@@ -362,10 +362,10 @@ E | 0 | project meeting | Mon 2pm | 4pm
 
 1. `todo`
 2. `deadline return book`
-3. `deadline /by Sunday`
+3. `deadline /by 2019-12-02 18:00`
 4. `event project meeting`
-5. `event project meeting /from Mon 2pm`
-6. `event /from Mon 2pm /to 4pm`
+5. `event project meeting /from 2019-12-03 14:00`
+6. `event /from 2019-12-03 14:00 /to 2019-12-03 16:00`
 7. `list`
 8. `bye`
 
@@ -387,7 +387,7 @@ Shan: Please specify a deadline using /by.
 ____________________________________________________________
 ```
 
-3. Output caused by `deadline /by Sunday`:
+3. Output caused by `deadline /by 2019-12-02 18:00`:
 
 ```text
 ____________________________________________________________
@@ -403,7 +403,7 @@ Shan: Specify the event start using /from.
 ____________________________________________________________
 ```
 
-5. Output caused by `event project meeting /from Mon 2pm`:
+5. Output caused by `event project meeting /from 2019-12-03 14:00`:
 
 ```text
 ____________________________________________________________
@@ -411,7 +411,7 @@ Shan: Specify the event end using /to.
 ____________________________________________________________
 ```
 
-6. Output caused by `event /from Mon 2pm /to 4pm`:
+6. Output caused by `event /from 2019-12-03 14:00 /to 2019-12-03 16:00`:
 
 ```text
 ____________________________________________________________
@@ -517,10 +517,10 @@ ____________________________________________________________
 T | 1 | read book
 D | 0 | missing deadline
 D | 0 | return book |
-E | 0 | meeting | Mon | 4pm | extra
+E | 0 | meeting | 2019-12-03 14:00 | 2019-12-03 16:00 | extra
 X | 0 | unknown type
 T | 2 | invalid status
-E | 0 | valid meeting | Mon 2pm | 4pm
+E | 0 | valid meeting | 2019-12-03 14:00 | 2019-12-03 16:00
 ```
 
 **Expected startup warning:**
@@ -544,7 +544,7 @@ ____________________________________________________________
 ____________________________________________________________
 Shan: Here are the tasks in your list:
 1.[T][X] read book
-2.[E][ ] valid meeting (from: Mon 2pm to: 4pm)
+2.[E][ ] valid meeting (from: Dec 03 2019, 2:00 PM to: Dec 03 2019, 4:00 PM)
 ____________________________________________________________
 ```
 
@@ -609,8 +609,8 @@ ____________________________________________________________
 **Inputs:**
 
 1. `todo read | book`
-2. `deadline return book /by Sun | day`
-3. `event project meeting /from Mon | 2pm /to 4pm`
+2. `deadline return book /by 2019-12-02 | 18:00`
+3. `event project meeting /from 2019-12-03 | 14:00 /to 2019-12-03 16:00`
 4. `list`
 5. `bye`
 
@@ -624,7 +624,7 @@ Shan: Task details cannot contain |.
 ____________________________________________________________
 ```
 
-2. Output caused by `deadline return book /by Sun | day`:
+2. Output caused by `deadline return book /by 2019-12-02 | 18:00`:
 
 ```text
 ____________________________________________________________
@@ -632,7 +632,7 @@ Shan: Task details cannot contain |.
 ____________________________________________________________
 ```
 
-3. Output caused by `event project meeting /from Mon | 2pm /to 4pm`:
+3. Output caused by `event project meeting /from 2019-12-03 | 14:00 /to 2019-12-03 16:00`:
 
 ```text
 ____________________________________________________________
@@ -720,4 +720,80 @@ ____________________________________________________________
 ____________________________________________________________
 Shan: Bye! See you soon.
 ____________________________________________________________
+```
+
+### UI-011: Parse and validate date-times
+
+**Aim:** Verify that Shan parses both supported date-time formats, displays them clearly, and rejects invalid ranges and calendar dates.
+
+**Inputs:**
+
+1. `deadline return book /by 2/12/2019 1800`
+2. `event project meeting /from 2019-12-03 14:00 /to 2019-12-03 16:00`
+3. `deadline impossible date /by 2019-02-30 18:00`
+4. `event backwards /from 2019-12-03 16:00 /to 2019-12-03 14:00`
+5. `list`
+6. `bye`
+
+**Expected outputs:**
+
+1. Output caused by `deadline return book /by 2/12/2019 1800`:
+
+```text
+____________________________________________________________
+Shan: I Gotchu. I've added this:
+  [D][ ] return book (by: Dec 02 2019, 6:00 PM)
+Now you have 1 tasks.
+____________________________________________________________
+```
+
+2. Output caused by `event project meeting /from 2019-12-03 14:00 /to 2019-12-03 16:00`:
+
+```text
+____________________________________________________________
+Shan: I Gotchu. I've added this:
+  [E][ ] project meeting (from: Dec 03 2019, 2:00 PM to: Dec 03 2019, 4:00 PM)
+Now you have 2 tasks.
+____________________________________________________________
+```
+
+3. Output caused by `deadline impossible date /by 2019-02-30 18:00`:
+
+```text
+____________________________________________________________
+Shan: Use a valid date and time in yyyy-MM-dd HH:mm or d/M/yyyy HHmm format.
+____________________________________________________________
+```
+
+4. Output caused by `event backwards /from 2019-12-03 16:00 /to 2019-12-03 14:00`:
+
+```text
+____________________________________________________________
+Shan: The event end must be after its start.
+____________________________________________________________
+```
+
+5. Output caused by `list`:
+
+```text
+____________________________________________________________
+Shan: Here are the tasks in your list:
+1.[D][ ] return book (by: Dec 02 2019, 6:00 PM)
+2.[E][ ] project meeting (from: Dec 03 2019, 2:00 PM to: Dec 03 2019, 4:00 PM)
+____________________________________________________________
+```
+
+6. Output caused by `bye`:
+
+```text
+____________________________________________________________
+Shan: Bye! See you soon.
+____________________________________________________________
+```
+
+**Expected final data file:**
+
+```text
+D | 0 | return book | 2019-12-02 18:00
+E | 0 | project meeting | 2019-12-03 14:00 | 2019-12-03 16:00
 ```

@@ -1,0 +1,73 @@
+package shan;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
+import java.util.List;
+import java.util.Locale;
+
+/**
+ * Parses and formats the date-times used by Shan's dated tasks.
+ */
+public final class DateTimeParser {
+    private static final List<DateTimeFormatter> INPUT_FORMATTERS = List.of(
+            formatter("uuuu-MM-dd HH:mm"),
+            formatter("d/M/uuuu HHmm"));
+    private static final DateTimeFormatter DISPLAY_FORMATTER =
+            DateTimeFormatter.ofPattern("MMM dd uuuu, h:mm a", Locale.ENGLISH);
+    private static final DateTimeFormatter STORAGE_FORMATTER = formatter("uuuu-MM-dd HH:mm");
+
+    private DateTimeParser() {
+    }
+
+    /**
+     * Parses a supported date-time string strictly, including calendar validity.
+     *
+     * @param input Date-time supplied by the user or data file.
+     * @return Parsed date-time.
+     * @throws InvalidArgumentException If the input has an unsupported format or invalid date.
+     */
+    public static LocalDateTime parse(String input) throws InvalidArgumentException {
+        for (DateTimeFormatter formatter : INPUT_FORMATTERS) {
+            try {
+                return LocalDateTime.parse(input, formatter);
+            } catch (DateTimeParseException ignored) {
+                // Try the next supported format.
+            }
+        }
+        throw new InvalidArgumentException(
+                "Use a valid date and time in yyyy-MM-dd HH:mm or d/M/yyyy HHmm format.");
+    }
+
+    /**
+     * Formats a date-time for chatbot responses.
+     *
+     * @param dateTime Date-time to display.
+     * @return Human-friendly date-time.
+     */
+    public static String formatForDisplay(LocalDateTime dateTime) {
+        return dateTime.format(DISPLAY_FORMATTER);
+    }
+
+    /**
+     * Formats a date-time using Shan's canonical save-file representation.
+     *
+     * @param dateTime Date-time to save.
+     * @return Stable date-time representation.
+     */
+    public static String formatForStorage(LocalDateTime dateTime) {
+        return dateTime.format(STORAGE_FORMATTER);
+    }
+
+    /**
+     * Creates a strict formatter for a supported input or storage pattern.
+     *
+     * @param pattern Date-time pattern.
+     * @return Strict locale-independent formatter.
+     */
+    private static DateTimeFormatter formatter(String pattern) {
+        return DateTimeFormatter.ofPattern(pattern, Locale.ROOT)
+                .withResolverStyle(ResolverStyle.STRICT);
+    }
+}
