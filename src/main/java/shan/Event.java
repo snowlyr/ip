@@ -1,5 +1,6 @@
 package shan;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -32,6 +33,20 @@ public class Event extends Task {
         return String.format("E | %s | %s | %s", getFileFields(),
                 DateTimeParser.formatForStorage(this.startDate),
                 DateTimeParser.formatForStorage(this.endDate));
+    }
+
+    /**
+     * Returns whether this event overlaps an inclusive date range.
+     *
+     * @param startDate First date in the range.
+     * @param endDate   Last date in the range.
+     * @return {@code true} when any part of the event occurs within the range.
+     */
+    @Override
+    public boolean occursBetween(LocalDate startDate, LocalDate endDate) {
+        LocalDate eventStartDate = this.startDate.toLocalDate();
+        LocalDate eventEndDate = this.endDate.toLocalDate();
+        return !eventEndDate.isBefore(startDate) && !eventStartDate.isAfter(endDate);
     }
 
     /**

@@ -1,5 +1,6 @@
 package shan;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -11,6 +12,9 @@ import java.util.Locale;
  * Parses and formats the date-times used by Shan's dated tasks.
  */
 public final class DateTimeParser {
+    private static final DateTimeFormatter DATE_INPUT_FORMATTER = formatter("uuuu-MM-dd");
+    private static final DateTimeFormatter DATE_DISPLAY_FORMATTER =
+            DateTimeFormatter.ofPattern("MMM dd uuuu", Locale.ENGLISH);
     private static final List<DateTimeFormatter> INPUT_FORMATTERS = List.of(
             formatter("uuuu-MM-dd HH:mm"),
             formatter("d/M/uuuu HHmm"));
@@ -38,6 +42,31 @@ public final class DateTimeParser {
         }
         throw new InvalidArgumentException(
                 "Use a valid date and time in yyyy-MM-dd HH:mm or d/M/yyyy HHmm format.");
+    }
+
+    /**
+     * Parses a calendar date strictly using {@code yyyy-MM-dd}.
+     *
+     * @param input Date supplied by the user.
+     * @return Parsed date.
+     * @throws InvalidArgumentException If the input is not a valid date in the supported format.
+     */
+    public static LocalDate parseDate(String input) throws InvalidArgumentException {
+        try {
+            return LocalDate.parse(input, DATE_INPUT_FORMATTER);
+        } catch (DateTimeParseException exception) {
+            throw new InvalidArgumentException("Use a valid date in yyyy-MM-dd format.");
+        }
+    }
+
+    /**
+     * Formats a date for chatbot responses.
+     *
+     * @param date Date to display.
+     * @return Human-friendly date.
+     */
+    public static String formatDateForDisplay(LocalDate date) {
+        return date.format(DATE_DISPLAY_FORMATTER);
     }
 
     /**

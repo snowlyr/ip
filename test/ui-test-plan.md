@@ -797,3 +797,111 @@ ____________________________________________________________
 D | 0 | return book | 2019-12-02 18:00
 E | 0 | project meeting | 2019-12-03 14:00 | 2019-12-03 16:00
 ```
+
+### UI-012: Show dated tasks occurring on a date or within a range
+
+**Aim:** Verify that Shan finds deadlines and overlapping events on one date or
+within an inclusive date range, preserves original task numbers, and rejects
+missing dates, invalid dates, and reversed ranges.
+
+**Initial data file:**
+
+```text
+T | 0 | read book
+D | 0 | return book | 2019-12-02 18:00
+E | 0 | project meeting | 2019-12-02 14:00 | 2019-12-02 16:00
+E | 0 | overnight event | 2019-12-02 20:00 | 2019-12-03 02:00
+D | 0 | submit report | 2019-12-04 09:00
+```
+
+**Inputs:**
+
+1. `on 2019-12-02`
+2. `on 2019-12-03`
+3. `on 2019-12-03 /to 2019-12-04`
+4. `on 2019-12-05`
+5. `on`
+6. `on 2019-02-30`
+7. `on 2019-12-04 /to 2019-12-03`
+8. `on 2019-12-03 /to`
+9. `bye`
+
+**Expected outputs:**
+
+1. Output caused by `on 2019-12-02`:
+
+```text
+____________________________________________________________
+Shan: Here are the deadlines and events on Dec 02 2019:
+2.[D][ ] return book (by: Dec 02 2019, 6:00 PM)
+3.[E][ ] project meeting (from: Dec 02 2019, 2:00 PM to: Dec 02 2019, 4:00 PM)
+4.[E][ ] overnight event (from: Dec 02 2019, 8:00 PM to: Dec 03 2019, 2:00 AM)
+____________________________________________________________
+```
+
+2. Output caused by `on 2019-12-03`:
+
+```text
+____________________________________________________________
+Shan: Here are the deadlines and events on Dec 03 2019:
+4.[E][ ] overnight event (from: Dec 02 2019, 8:00 PM to: Dec 03 2019, 2:00 AM)
+____________________________________________________________
+```
+
+3. Output caused by `on 2019-12-03 /to 2019-12-04`:
+
+```text
+____________________________________________________________
+Shan: Here are the deadlines and events from Dec 03 2019 to Dec 04 2019:
+4.[E][ ] overnight event (from: Dec 02 2019, 8:00 PM to: Dec 03 2019, 2:00 AM)
+5.[D][ ] submit report (by: Dec 04 2019, 9:00 AM)
+____________________________________________________________
+```
+
+4. Output caused by `on 2019-12-05`:
+
+```text
+____________________________________________________________
+Shan: There are no deadlines or events on Dec 05 2019.
+____________________________________________________________
+```
+
+5. Output caused by `on`:
+
+```text
+____________________________________________________________
+Shan: Specify a date using yyyy-MM-dd.
+____________________________________________________________
+```
+
+6. Output caused by `on 2019-02-30`:
+
+```text
+____________________________________________________________
+Shan: Use a valid date in yyyy-MM-dd format.
+____________________________________________________________
+```
+
+7. Output caused by `on 2019-12-04 /to 2019-12-03`:
+
+```text
+____________________________________________________________
+Shan: The range end date cannot be before its start date.
+____________________________________________________________
+```
+
+8. Output caused by `on 2019-12-03 /to`:
+
+```text
+____________________________________________________________
+Shan: Specify both range dates using /to.
+____________________________________________________________
+```
+
+9. Output caused by `bye`:
+
+```text
+____________________________________________________________
+Shan: Bye! See you soon.
+____________________________________________________________
+```

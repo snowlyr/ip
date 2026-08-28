@@ -1,5 +1,7 @@
 package shan;
 
+import java.time.LocalDate;
+
 /**
  * Represents a task that can be marked as completed.
  */
@@ -43,6 +45,27 @@ public abstract class Task {
      */
     public boolean isDone() {
         return this.isDone;
+    }
+
+    /**
+     * Returns whether this task occurs on the specified date.
+     *
+     * @param date Date to check.
+     * @return {@code true} when this task occurs on the date.
+     */
+    public boolean occursOn(LocalDate date) {
+        return occursBetween(date, date);
+    }
+
+    /**
+     * Returns whether this task occurs within an inclusive date range.
+     *
+     * @param startDate First date in the range.
+     * @param endDate   Last date in the range.
+     * @return {@code true} when this task occurs within the range.
+     */
+    public boolean occursBetween(LocalDate startDate, LocalDate endDate) {
+        return false;
     }
 
     /**

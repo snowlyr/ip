@@ -3,6 +3,7 @@ package shan;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -21,6 +22,7 @@ public class Shan {
         MARK,
         UNMARK,
         DELETE,
+        ON,
         TODO,
         DEADLINE,
         EVENT
@@ -49,8 +51,8 @@ public class Shan {
             int skippedTasks = loadTasks();
             if (skippedTasks > 0) {
                 startupWarning = String.format(
-                    "Warning: I skipped %d invalid task %s in data/shan.txt.",
-                    skippedTasks, skippedTasks == 1 ? "entry" : "entries");
+                        "Warning: I skipped %d invalid task %s in data/shan.txt.",
+                        skippedTasks, skippedTasks == 1 ? "entry" : "entries");
             }
         } catch (DataFileException exception) {
             startupWarning = exception.getMessage();
@@ -121,6 +123,7 @@ public class Shan {
             case MARK -> commandMark(parseTaskNumber(arguments));
             case UNMARK -> commandUnmark(parseTaskNumber(arguments));
             case DELETE -> commandDelete(parseTaskNumber(arguments));
+            case ON -> commandShowOnDateOrRange(arguments);
             case TODO -> commandAddToDo(arguments);
             case DEADLINE -> commandAddDeadline(arguments);
             case EVENT -> commandAddEvent(arguments);
@@ -178,7 +181,8 @@ public class Shan {
      * @param taskName Name of the task to add.
      * @return Reply confirming the added task.
      * @throws MissingArgumentException If the task description is empty.
-     * @throws InvalidArgumentException If the task contains the save-file delimiter.
+     * @throws InvalidArgumentException If the task contains the save-file
+     *                                  delimiter.
      * @throws DataFileException        If the task list cannot be saved.
      */
     private static String commandAddToDo(String taskName)
@@ -261,7 +265,7 @@ public class Shan {
         LocalDateTime startDate = DateTimeParser.parse(startDateInput);
         LocalDateTime endDate = DateTimeParser.parse(endDateInput);
         if (!endDate.isAfter(startDate)) {
-            throw new InvalidArgumentException("The event end must be after its start.");
+            throw new InvalidArgumentException("The event end must be after its start bro.");
         }
         return addTask(new Event(taskName, startDate, endDate));
     }
@@ -403,7 +407,8 @@ public class Shan {
      *
      * @param fields Serialized Event fields.
      * @return Parsed Event.
-     * @throws InvalidArgumentException If a date-time is invalid or the end is not after the start.
+     * @throws InvalidArgumentException If a date-time is invalid or the end is not
+     *                                  after the start.
      */
     private static Event parseSavedEvent(String[] fields) throws InvalidArgumentException {
         LocalDateTime startDate = DateTimeParser.parse(fields[3]);
@@ -423,6 +428,58 @@ public class Shan {
         StringBuilder result = new StringBuilder("Here are the tasks in your list:");
         for (int i = 0; i < tasks.size(); i++) {
             result.append(String.format("\n%d.%s", i + 1, tasks.get(i)));
+        }
+        return result.toString();
+    }
+
+    /**
+     * Returns deadlines and events on one date or within an inclusive date range.
+     *
+     * @param argument One date, or two dates separated by {@code /to}.
+     * @return Enumerated matching tasks, or a message when there are no matches.
+     * @throws MissingArgumentException If a required date is missing.
+     * @throws InvalidArgumentException If a date or range is invalid.
+     */
+    private static String commandShowOnDateOrRange(String argument)
+            throws MissingArgumentException, InvalidArgumentException {
+        if (argument.isBlank()) {
+            throw new MissingArgumentException("Specify a date using yyyy-MM-dd format pleaseee ><.");
+        }
+
+        String[] dateInputs = argument.split("/to", 2);
+        if (dateInputs.length == 2 && (dateInputs[0].isBlank() || dateInputs[1].isBlank())) {
+            throw new MissingArgumentException("Specify both range dates using /to.");
+        }
+
+        LocalDate startDate = DateTimeParser.parseDate(dateInputs[0].trim());
+        LocalDate endDate = dateInputs.length == 1
+                ? startDate
+                : DateTimeParser.parseDate(dateInputs[1].trim());
+        if (endDate.isBefore(startDate)) {
+            throw new InvalidArgumentException("The range end date cannot be before its start date, bro?");
+        }
+
+        boolean isRange = !startDate.equals(endDate);
+        String displayStartDate = DateTimeParser.formatDateForDisplay(startDate);
+        String displayEndDate = DateTimeParser.formatDateForDisplay(endDate);
+        String resultHeading = isRange
+                ? String.format("Here are the deadlines and events from %s to %s:",
+                        displayStartDate, displayEndDate)
+                : String.format("Got your deadlines and events on %s:", displayStartDate);
+        StringBuilder result = new StringBuilder(resultHeading);
+        int matchCount = 0;
+        for (int i = 0; i < tasks.size(); i++) {
+            Task task = tasks.get(i);
+            if (task.occursBetween(startDate, endDate)) {
+                result.append(String.format("\n%d.%s", i + 1, task));
+                matchCount++;
+            }
+        }
+        if (matchCount == 0) {
+            return isRange
+                    ? String.format("There are no deadlines or events from %s to %s.",
+                            displayStartDate, displayEndDate)
+                    : String.format("There are no deadlines or events on %s.", displayStartDate);
         }
         return result.toString();
     }

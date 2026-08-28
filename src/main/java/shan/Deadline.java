@@ -1,5 +1,6 @@
 package shan;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -28,6 +29,19 @@ public class Deadline extends Task {
     public String toFileString() {
         return String.format("D | %s | %s", getFileFields(),
                 DateTimeParser.formatForStorage(this.endDate));
+    }
+
+    /**
+     * Returns whether this deadline is due within an inclusive date range.
+     *
+     * @param startDate First date in the range.
+     * @param endDate   Last date in the range.
+     * @return {@code true} when the deadline is due within the range.
+     */
+    @Override
+    public boolean occursBetween(LocalDate startDate, LocalDate endDate) {
+        LocalDate deadlineDate = this.endDate.toLocalDate();
+        return !deadlineDate.isBefore(startDate) && !deadlineDate.isAfter(endDate);
     }
 
     /**
