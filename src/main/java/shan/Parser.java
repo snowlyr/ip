@@ -36,13 +36,16 @@ public final class Parser {
     }
 
     /**
-     * Parses a complete input line into its command type and raw arguments.
+     * Parses a complete input line into an executable command.
      *
      * @param inputLine Input entered by the user.
-     * @return Parsed command and arguments.
-     * @throws InvalidCommandException If the command is blank or unknown.
+     * @return Command containing the parsed arguments.
+     * @throws InvalidCommandException  If the command is blank or unknown.
+     * @throws MissingArgumentException If a required argument is missing.
+     * @throws InvalidArgumentException If an argument is invalid.
      */
-    public static ParsedCommand parse(String inputLine) throws InvalidCommandException {
+    public static Command parse(String inputLine)
+            throws InvalidCommandException, MissingArgumentException, InvalidArgumentException {
         if (inputLine.isBlank()) {
             throw new InvalidCommandException("Enter a command dood.");
         }
@@ -55,7 +58,31 @@ public final class Parser {
             throw new InvalidCommandException("I don't understand bro.");
         }
         String arguments = tokens.length == 2 ? tokens[1] : "";
-        return new ParsedCommand(commandType, arguments);
+        return switch (commandType) {
+            case BYE -> new ExitCommand();
+            case LIST -> new ListCommand();
+            case MARK -> new MarkCommand(parseTaskNumber(arguments));
+            case UNMARK -> new UnmarkCommand(parseTaskNumber(arguments));
+            case DELETE -> new DeleteCommand(parseTaskNumber(arguments));
+            case ON -> parseOnCommand(arguments);
+            case TODO -> new AddCommand(parseToDo(arguments));
+            case DEADLINE -> new AddCommand(parseDeadline(arguments));
+            case EVENT -> new AddCommand(parseEvent(arguments));
+        };
+    }
+
+    /**
+     * Parses a date query into an executable command.
+     *
+     * @param argument One date, or two dates separated by {@code /to}.
+     * @return Command containing the parsed inclusive date range.
+     * @throws MissingArgumentException If a required date is missing.
+     * @throws InvalidArgumentException If a date or range is invalid.
+     */
+    private static OnCommand parseOnCommand(String argument)
+            throws MissingArgumentException, InvalidArgumentException {
+        DateRange dateRange = parseDateRange(argument);
+        return new OnCommand(dateRange.startDate(), dateRange.endDate());
     }
 
     /**
@@ -208,15 +235,6 @@ public final class Parser {
                 throw new InvalidArgumentException("Task details cannot contain |.");
             }
         }
-    }
-
-    /**
-     * Contains the type and raw arguments of a parsed command.
-     *
-     * @param commandType Parsed command type.
-     * @param arguments   Raw command arguments.
-     */
-    public record ParsedCommand(CommandType commandType, String arguments) {
     }
 
     /**
