@@ -2,14 +2,13 @@ package shan;
 
 import java.nio.file.Path;
 import java.time.LocalDate;
-import java.util.ArrayList;
 
 /**
  * Runs the Shan chatbot.
  */
 public class Shan {
     private static final Storage STORAGE = new Storage(Path.of("data", "shan.txt"));
-    private static final ArrayList<Task> tasks = new ArrayList<>();
+    private static final TaskList TASKS = new TaskList();
 
     private Shan() {
     }
@@ -21,10 +20,10 @@ public class Shan {
      */
     public static void main(String[] args) {
         String startupWarning = null;
-        tasks.clear();
+        TASKS.clear();
         try {
             Storage.LoadResult loadResult = STORAGE.load();
-            tasks.addAll(loadResult.tasks());
+            TASKS.replaceAll(loadResult.tasks());
             int skippedTasks = loadResult.skippedTasks();
             if (skippedTasks > 0) {
                 startupWarning = String.format(
@@ -104,14 +103,14 @@ public class Shan {
      * @throws DataFileException If the task list cannot be saved.
      */
     private static String addTask(Task task) throws DataFileException {
-        tasks.add(task);
+        TASKS.add(task);
         try {
-            STORAGE.save(tasks);
+            STORAGE.save(TASKS.snapshot());
         } catch (DataFileException exception) {
-            tasks.remove(tasks.size() - 1);
+            TASKS.removeLast();
             throw exception;
         }
-        return String.format("I Gotchu. I've added this:\n  %s\nNow you have %d tasks.", task, tasks.size());
+        return String.format("I Gotchu. I've added this:\n  %s\nNow you have %d tasks.", task, TASKS.size());
     }
 
     /**
@@ -121,8 +120,8 @@ public class Shan {
      */
     private static String commandList() {
         StringBuilder result = new StringBuilder("Here are the tasks in your list:");
-        for (int i = 0; i < tasks.size(); i++) {
-            result.append(String.format("\n%d.%s", i + 1, tasks.get(i)));
+        for (int taskNumber = 1; taskNumber <= TASKS.size(); taskNumber++) {
+            result.append(String.format("\n%d.%s", taskNumber, TASKS.get(taskNumber)));
         }
         return result.toString();
     }
@@ -150,10 +149,10 @@ public class Shan {
                 : String.format("Got your deadlines and events on %s:", displayStartDate);
         StringBuilder result = new StringBuilder(resultHeading);
         int matchCount = 0;
-        for (int i = 0; i < tasks.size(); i++) {
-            Task task = tasks.get(i);
+        for (int taskNumber = 1; taskNumber <= TASKS.size(); taskNumber++) {
+            Task task = TASKS.get(taskNumber);
             if (task.occursBetween(startDate, endDate)) {
-                result.append(String.format("\n%d.%s", i + 1, task));
+                result.append(String.format("\n%d.%s", taskNumber, task));
                 matchCount++;
             }
         }
@@ -175,14 +174,14 @@ public class Shan {
      * @throws DataFileException        If the task list cannot be saved.
      */
     private static String commandMark(int taskNumber) throws InvalidArgumentException, DataFileException {
-        if (taskNumber > tasks.size() || taskNumber < 1) {
+        if (!TASKS.containsTaskNumber(taskNumber)) {
             throw new InvalidArgumentException("Woopsies, this task does not exist!!");
         }
-        Task task = tasks.get(taskNumber - 1);
+        Task task = TASKS.get(taskNumber);
         boolean wasDone = task.isDone();
         String taskDisplay = task.markDone();
         try {
-            STORAGE.save(tasks);
+            STORAGE.save(TASKS.snapshot());
         } catch (DataFileException exception) {
             if (!wasDone) {
                 task.unmarkDone();
@@ -201,14 +200,14 @@ public class Shan {
      * @throws DataFileException        If the task list cannot be saved.
      */
     private static String commandUnmark(int taskNumber) throws InvalidArgumentException, DataFileException {
-        if (taskNumber > tasks.size() || taskNumber < 1) {
+        if (!TASKS.containsTaskNumber(taskNumber)) {
             throw new InvalidArgumentException("oops, this task does not exist!!");
         }
-        Task task = tasks.get(taskNumber - 1);
+        Task task = TASKS.get(taskNumber);
         boolean wasDone = task.isDone();
         String taskDisplay = task.unmarkDone();
         try {
-            STORAGE.save(tasks);
+            STORAGE.save(TASKS.snapshot());
         } catch (DataFileException exception) {
             if (wasDone) {
                 task.markDone();
@@ -227,17 +226,17 @@ public class Shan {
      * @throws DataFileException        If the task list cannot be saved.
      */
     private static String commandDelete(int taskNumber) throws InvalidArgumentException, DataFileException {
-        if (taskNumber > tasks.size() || taskNumber < 1) {
+        if (!TASKS.containsTaskNumber(taskNumber)) {
             throw new InvalidArgumentException("Woopsies, this task does not exist!!");
         }
-        Task removedTask = tasks.remove(taskNumber - 1);
+        Task removedTask = TASKS.delete(taskNumber);
         try {
-            STORAGE.save(tasks);
+            STORAGE.save(TASKS.snapshot());
         } catch (DataFileException exception) {
-            tasks.add(taskNumber - 1, removedTask);
+            TASKS.restore(taskNumber, removedTask);
             throw exception;
         }
         return String.format("Noted. I've removed this task:\n  %s\nNow you have %d tasks.",
-                removedTask, tasks.size());
+                removedTask, TASKS.size());
     }
 }
