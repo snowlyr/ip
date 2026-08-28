@@ -1,7 +1,5 @@
 package shan;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -27,7 +25,7 @@ public class Shan {
         EVENT
     }
 
-    private static final Path DATA_FILE = Path.of("data", "shan.txt");
+    private static final Storage STORAGE = new Storage(Path.of("data", "shan.txt"));
     private static final ArrayList<Task> tasks = new ArrayList<>();
 
     private Shan() {
@@ -40,12 +38,16 @@ public class Shan {
      */
     public static void main(String[] args) {
         String startupWarning = null;
+        tasks.clear();
         try {
-            int skippedTasks = loadTasks();
+            Storage.LoadResult loadResult = STORAGE.load();
+            tasks.addAll(loadResult.tasks());
+            int skippedTasks = loadResult.skippedTasks();
             if (skippedTasks > 0) {
                 startupWarning = String.format(
-                        "Warning: I skipped %d invalid task %s in data/shan.txt.",
-                        skippedTasks, skippedTasks == 1 ? "entry" : "entries");
+                        "Warning: I skipped %d invalid task %s in %s.",
+                        skippedTasks, skippedTasks == 1 ? "entry" : "entries",
+                        STORAGE.getFilePath());
             }
         } catch (DataFileException exception) {
             startupWarning = exception.getMessage();
@@ -271,129 +273,12 @@ public class Shan {
     private static String addTask(Task task) throws DataFileException {
         tasks.add(task);
         try {
-            saveTasks();
+            STORAGE.save(tasks);
         } catch (DataFileException exception) {
             tasks.remove(tasks.size() - 1);
             throw exception;
         }
         return String.format("I Gotchu. I've added this:\n  %s\nNow you have %d tasks.", task, tasks.size());
-    }
-
-    /**
-     * Writes the current task list to the data file.
-     *
-     * @throws DataFileException If the data directory or file cannot be written.
-     */
-    private static void saveTasks() throws DataFileException {
-        try {
-            Files.createDirectories(DATA_FILE.getParent());
-            ArrayList<String> lines = new ArrayList<>();
-            for (Task task : tasks) {
-                lines.add(task.toFileString());
-            }
-            Files.write(DATA_FILE, lines);
-        } catch (IOException | SecurityException exception) {
-            throw new DataFileException("I couldn't save your tasks to data/shan.txt.");
-        }
-    }
-
-    /**
-     * Loads valid tasks from the data file when it exists.
-     *
-     * @return Number of invalid nonblank entries that were skipped.
-     * @throws DataFileException If the data file cannot be read.
-     */
-    private static int loadTasks() throws DataFileException {
-        tasks.clear();
-        try {
-            if (Files.notExists(DATA_FILE)) {
-                return 0;
-            }
-            if (!Files.isRegularFile(DATA_FILE)) {
-                throw new DataFileException(
-                        "I couldn't read data/shan.txt. Starting with an empty task list.");
-            }
-
-            int skippedTasks = 0;
-            for (String line : Files.readAllLines(DATA_FILE)) {
-                if (line.isBlank()) {
-                    continue;
-                }
-
-                Task task = parseSavedTask(line);
-                if (task == null) {
-                    skippedTasks++;
-                    continue;
-                }
-                tasks.add(task);
-            }
-            return skippedTasks;
-        } catch (IOException | SecurityException exception) {
-            tasks.clear();
-            throw new DataFileException(
-                    "I couldn't read data/shan.txt. Starting with an empty task list.");
-        }
-    }
-
-    /**
-     * Converts one valid save-file entry into a task.
-     *
-     * @param line Save-file entry.
-     * @return Parsed task, or {@code null} when the entry is invalid.
-     */
-    private static Task parseSavedTask(String line) {
-        String[] fields = line.trim().split("\\s*\\|\\s*", -1);
-        if (fields.length < 2 || (!fields[1].equals("0") && !fields[1].equals("1"))) {
-            return null;
-        }
-
-        int expectedFieldCount = switch (fields[0]) {
-            case "T" -> 3;
-            case "D" -> 4;
-            case "E" -> 5;
-            default -> -1;
-        };
-        if (fields.length != expectedFieldCount) {
-            return null;
-        }
-        for (int i = 2; i < fields.length; i++) {
-            if (fields[i].isBlank()) {
-                return null;
-            }
-        }
-
-        Task task;
-        try {
-            task = switch (fields[0]) {
-                case "T" -> new ToDo(fields[2]);
-                case "D" -> new Deadline(fields[2], DateTimeParser.parse(fields[3]));
-                case "E" -> parseSavedEvent(fields);
-                default -> throw new AssertionError("Task type was already validated");
-            };
-        } catch (InvalidArgumentException exception) {
-            return null;
-        }
-        if (fields[1].equals("1")) {
-            task.markDone();
-        }
-        return task;
-    }
-
-    /**
-     * Parses an Event from fields whose type, status, and field count are valid.
-     *
-     * @param fields Serialized Event fields.
-     * @return Parsed Event.
-     * @throws InvalidArgumentException If a date-time is invalid or the end is not
-     *                                  after the start.
-     */
-    private static Event parseSavedEvent(String[] fields) throws InvalidArgumentException {
-        LocalDateTime startDate = DateTimeParser.parse(fields[3]);
-        LocalDateTime endDate = DateTimeParser.parse(fields[4]);
-        if (!endDate.isAfter(startDate)) {
-            throw new InvalidArgumentException("The event end must be after its start.");
-        }
-        return new Event(fields[2], startDate, endDate);
     }
 
     /**
@@ -477,7 +362,7 @@ public class Shan {
         boolean wasDone = task.isDone();
         String taskDisplay = task.markDone();
         try {
-            saveTasks();
+            STORAGE.save(tasks);
         } catch (DataFileException exception) {
             if (!wasDone) {
                 task.unmarkDone();
@@ -503,7 +388,7 @@ public class Shan {
         boolean wasDone = task.isDone();
         String taskDisplay = task.unmarkDone();
         try {
-            saveTasks();
+            STORAGE.save(tasks);
         } catch (DataFileException exception) {
             if (wasDone) {
                 task.markDone();
@@ -527,7 +412,7 @@ public class Shan {
         }
         Task removedTask = tasks.remove(taskNumber - 1);
         try {
-            saveTasks();
+            STORAGE.save(tasks);
         } catch (DataFileException exception) {
             tasks.add(taskNumber - 1, removedTask);
             throw exception;
