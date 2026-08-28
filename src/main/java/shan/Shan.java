@@ -7,7 +7,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Locale;
-import java.util.Scanner;
 
 /**
  * Runs the Shan chatbot.
@@ -28,12 +27,6 @@ public class Shan {
         EVENT
     }
 
-    private static final String DIVIDER = "____________________________________________________________";
-    private static final String BANNER = " ____  _\n"
-            + "/ ___|| |__   __ _ _ __\n"
-            + "\\___ \\| '_ \\ / _` | '_ \\\n"
-            + " ___) | | | | (_| | | | |\n"
-            + "|____/|_| |_|\\__,_|_| |_| \n";
     private static final Path DATA_FILE = Path.of("data", "shan.txt");
     private static final ArrayList<Task> tasks = new ArrayList<>();
 
@@ -58,23 +51,18 @@ public class Shan {
             startupWarning = exception.getMessage();
         }
 
-        Scanner scanner = new Scanner(System.in);
-
-        System.out.println(DIVIDER);
-        System.out.println(BANNER);
-        String greeting = "Hey! I'm Shan.\nHow can I help?";
-        System.out.println(greeting);
-        System.out.println(DIVIDER);
+        Ui ui = new Ui();
+        ui.showWelcome();
         if (startupWarning != null) {
-            sendMessage(startupWarning);
+            ui.showMessage(startupWarning);
         }
 
-        while (scanner.hasNextLine()) {
-            String inputLine = scanner.nextLine().trim();
+        while (ui.hasNextCommand()) {
+            String inputLine = ui.readCommand();
             try {
-                sendMessage(reply(inputLine));
+                ui.showMessage(reply(inputLine));
             } catch (ShanException exception) {
-                sendMessage(exception.getMessage());
+                ui.showMessage(exception.getMessage());
             }
 
             if (inputLine.equals("bye")) {
@@ -82,18 +70,7 @@ public class Shan {
             }
         }
 
-        scanner.close();
-    }
-
-    /**
-     * Prints a message using Shan's standard response formatting.
-     *
-     * @param message Message to print.
-     */
-    private static void sendMessage(String message) {
-        System.out.println(DIVIDER);
-        System.out.println("Shan: " + message);
-        System.out.println(DIVIDER);
+        ui.close();
     }
 
     /**
