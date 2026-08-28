@@ -7,46 +7,46 @@ import java.time.LocalDate;
  * Runs the Shan chatbot.
  */
 public class Shan {
-    private static final Storage STORAGE = new Storage(Path.of("data", "shan.txt"));
-    private static final TaskList TASKS = new TaskList();
+    private final Storage storage;
+    private final TaskList tasks;
+    private final Ui ui;
 
-    private Shan() {
+    /**
+     * Constructs Shan with collaborators that use the specified data file.
+     *
+     * @param dataFile Relative path to the task data file.
+     */
+    public Shan(Path dataFile) {
+        this.storage = new Storage(dataFile);
+        this.tasks = new TaskList();
+        this.ui = new Ui();
     }
 
     /**
-     * Starts Shan and processes commands from standard input.
+     * Starts Shan using the default task data file.
      *
      * @param args Command-line arguments; unused.
      */
     public static void main(String[] args) {
-        String startupWarning = null;
-        TASKS.clear();
-        try {
-            Storage.LoadResult loadResult = STORAGE.load();
-            TASKS.replaceAll(loadResult.tasks());
-            int skippedTasks = loadResult.skippedTasks();
-            if (skippedTasks > 0) {
-                startupWarning = String.format(
-                        "Warning: I skipped %d invalid task %s in %s.",
-                        skippedTasks, skippedTasks == 1 ? "entry" : "entries",
-                        STORAGE.getFilePath());
-            }
-        } catch (DataFileException exception) {
-            startupWarning = exception.getMessage();
-        }
+        new Shan(Path.of("data", "shan.txt")).run();
+    }
 
-        Ui ui = new Ui();
-        ui.showWelcome();
+    /**
+     * Loads saved tasks and processes commands from standard input.
+     */
+    public void run() {
+        String startupWarning = loadTasks();
+        this.ui.showWelcome();
         if (startupWarning != null) {
-            ui.showMessage(startupWarning);
+            this.ui.showMessage(startupWarning);
         }
 
-        while (ui.hasNextCommand()) {
-            String inputLine = ui.readCommand();
+        while (this.ui.hasNextCommand()) {
+            String inputLine = this.ui.readCommand();
             try {
-                ui.showMessage(reply(inputLine));
+                this.ui.showMessage(reply(inputLine));
             } catch (ShanException exception) {
-                ui.showMessage(exception.getMessage());
+                this.ui.showMessage(exception.getMessage());
             }
 
             if (inputLine.equals("bye")) {
@@ -54,7 +54,30 @@ public class Shan {
             }
         }
 
-        ui.close();
+        this.ui.close();
+    }
+
+    /**
+     * Loads tasks and returns a warning when any saved data cannot be used.
+     *
+     * @return Startup warning, or {@code null} when loading succeeds completely.
+     */
+    private String loadTasks() {
+        this.tasks.clear();
+        try {
+            Storage.LoadResult loadResult = this.storage.load();
+            this.tasks.replaceAll(loadResult.tasks());
+            int skippedTasks = loadResult.skippedTasks();
+            if (skippedTasks > 0) {
+                return String.format(
+                        "Warning: I skipped %d invalid task %s in %s.",
+                        skippedTasks, skippedTasks == 1 ? "entry" : "entries",
+                        this.storage.getFilePath());
+            }
+            return null;
+        } catch (DataFileException exception) {
+            return exception.getMessage();
+        }
     }
 
     /**
@@ -67,7 +90,7 @@ public class Shan {
      * @throws InvalidArgumentException If an argument has an invalid value.
      * @throws DataFileException        If the task list cannot be saved.
      */
-    private static String reply(String inputLine)
+    private String reply(String inputLine)
             throws InvalidCommandException, MissingArgumentException,
             InvalidArgumentException, DataFileException {
         Parser.ParsedCommand parsedCommand = Parser.parse(inputLine);
@@ -91,7 +114,7 @@ public class Shan {
      *
      * @return Farewell message for {@code bye}.
      */
-    private static String commandExit() {
+    private String commandExit() {
         return "Bye! See you soon.";
     }
 
@@ -102,15 +125,15 @@ public class Shan {
      * @return Reply confirming that the task was added.
      * @throws DataFileException If the task list cannot be saved.
      */
-    private static String addTask(Task task) throws DataFileException {
-        TASKS.add(task);
+    private String addTask(Task task) throws DataFileException {
+        this.tasks.add(task);
         try {
-            STORAGE.save(TASKS.snapshot());
+            this.storage.save(this.tasks.snapshot());
         } catch (DataFileException exception) {
-            TASKS.removeLast();
+            this.tasks.removeLast();
             throw exception;
         }
-        return String.format("I Gotchu. I've added this:\n  %s\nNow you have %d tasks.", task, TASKS.size());
+        return String.format("I Gotchu. I've added this:\n  %s\nNow you have %d tasks.", task, this.tasks.size());
     }
 
     /**
@@ -118,10 +141,10 @@ public class Shan {
      *
      * @return Enumerated list of tasks.
      */
-    private static String commandList() {
+    private String commandList() {
         StringBuilder result = new StringBuilder("Here are the tasks in your list:");
-        for (int taskNumber = 1; taskNumber <= TASKS.size(); taskNumber++) {
-            result.append(String.format("\n%d.%s", taskNumber, TASKS.get(taskNumber)));
+        for (int taskNumber = 1; taskNumber <= this.tasks.size(); taskNumber++) {
+            result.append(String.format("\n%d.%s", taskNumber, this.tasks.get(taskNumber)));
         }
         return result.toString();
     }
@@ -134,7 +157,7 @@ public class Shan {
      * @throws MissingArgumentException If a required date is missing.
      * @throws InvalidArgumentException If a date or range is invalid.
      */
-    private static String commandShowOnDateOrRange(String argument)
+    private String commandShowOnDateOrRange(String argument)
             throws MissingArgumentException, InvalidArgumentException {
         Parser.DateRange dateRange = Parser.parseDateRange(argument);
         LocalDate startDate = dateRange.startDate();
@@ -149,8 +172,8 @@ public class Shan {
                 : String.format("Got your deadlines and events on %s:", displayStartDate);
         StringBuilder result = new StringBuilder(resultHeading);
         int matchCount = 0;
-        for (int taskNumber = 1; taskNumber <= TASKS.size(); taskNumber++) {
-            Task task = TASKS.get(taskNumber);
+        for (int taskNumber = 1; taskNumber <= this.tasks.size(); taskNumber++) {
+            Task task = this.tasks.get(taskNumber);
             if (task.occursBetween(startDate, endDate)) {
                 result.append(String.format("\n%d.%s", taskNumber, task));
                 matchCount++;
@@ -173,15 +196,15 @@ public class Shan {
      * @throws InvalidArgumentException If the task number does not exist.
      * @throws DataFileException        If the task list cannot be saved.
      */
-    private static String commandMark(int taskNumber) throws InvalidArgumentException, DataFileException {
-        if (!TASKS.containsTaskNumber(taskNumber)) {
+    private String commandMark(int taskNumber) throws InvalidArgumentException, DataFileException {
+        if (!this.tasks.containsTaskNumber(taskNumber)) {
             throw new InvalidArgumentException("Woopsies, this task does not exist!!");
         }
-        Task task = TASKS.get(taskNumber);
+        Task task = this.tasks.get(taskNumber);
         boolean wasDone = task.isDone();
         String taskDisplay = task.markDone();
         try {
-            STORAGE.save(TASKS.snapshot());
+            this.storage.save(this.tasks.snapshot());
         } catch (DataFileException exception) {
             if (!wasDone) {
                 task.unmarkDone();
@@ -199,15 +222,15 @@ public class Shan {
      * @throws InvalidArgumentException If the task number does not exist.
      * @throws DataFileException        If the task list cannot be saved.
      */
-    private static String commandUnmark(int taskNumber) throws InvalidArgumentException, DataFileException {
-        if (!TASKS.containsTaskNumber(taskNumber)) {
+    private String commandUnmark(int taskNumber) throws InvalidArgumentException, DataFileException {
+        if (!this.tasks.containsTaskNumber(taskNumber)) {
             throw new InvalidArgumentException("oops, this task does not exist!!");
         }
-        Task task = TASKS.get(taskNumber);
+        Task task = this.tasks.get(taskNumber);
         boolean wasDone = task.isDone();
         String taskDisplay = task.unmarkDone();
         try {
-            STORAGE.save(TASKS.snapshot());
+            this.storage.save(this.tasks.snapshot());
         } catch (DataFileException exception) {
             if (wasDone) {
                 task.markDone();
@@ -225,18 +248,18 @@ public class Shan {
      * @throws InvalidArgumentException If the task number does not exist.
      * @throws DataFileException        If the task list cannot be saved.
      */
-    private static String commandDelete(int taskNumber) throws InvalidArgumentException, DataFileException {
-        if (!TASKS.containsTaskNumber(taskNumber)) {
+    private String commandDelete(int taskNumber) throws InvalidArgumentException, DataFileException {
+        if (!this.tasks.containsTaskNumber(taskNumber)) {
             throw new InvalidArgumentException("Woopsies, this task does not exist!!");
         }
-        Task removedTask = TASKS.delete(taskNumber);
+        Task removedTask = this.tasks.delete(taskNumber);
         try {
-            STORAGE.save(TASKS.snapshot());
+            this.storage.save(this.tasks.snapshot());
         } catch (DataFileException exception) {
-            TASKS.restore(taskNumber, removedTask);
+            this.tasks.restore(taskNumber, removedTask);
             throw exception;
         }
         return String.format("Noted. I've removed this task:\n  %s\nNow you have %d tasks.",
-                removedTask, TASKS.size());
+                removedTask, this.tasks.size());
     }
 }
