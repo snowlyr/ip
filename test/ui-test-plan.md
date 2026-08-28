@@ -7,6 +7,9 @@ This file is the source of truth for Shan's console UI tests. Test cases run in 
 - Required Java version: 25
 - Compile command: `javac -d <temporary-class-directory> src/main/java/*.java`
 - Run command: `java -cp <temporary-class-directory> Shan`
+- Data file: `data/shan.txt`
+- Data setup: remove the data file before each test case unless the test case
+  specifies initial file contents
 - Comparison: exact text after converting CRLF line endings to LF and excluding the terminal's echo of submitted input
 - Failure policy: terminate the current process and stop the complete test run on the first mismatch
 
@@ -88,6 +91,44 @@ ____________________________________________________________
 ```
 
 7. Output caused by `bye`:
+
+```text
+____________________________________________________________
+Shan: Bye! See you soon.
+____________________________________________________________
+```
+
+### UI-006: Load saved tasks on startup
+
+**Aim:** Verify that Shan loads saved ToDo, Deadline, and Event tasks and restores their completion states.
+
+**Initial data file:**
+
+```text
+T | 1 | read book
+D | 0 | return book | Sunday
+E | 0 | project meeting | Mon 2pm | 4pm
+```
+
+**Inputs:**
+
+1. `list`
+2. `bye`
+
+**Expected outputs:**
+
+1. Output caused by `list`:
+
+```text
+____________________________________________________________
+Shan: Here are the tasks in your list:
+1.[T][X] read book
+2.[D][ ] return book (by: Sunday)
+3.[E][ ] project meeting (from: Mon 2pm to: 4pm)
+____________________________________________________________
+```
+
+2. Output caused by `bye`:
 
 ```text
 ____________________________________________________________
@@ -201,6 +242,116 @@ ____________________________________________________________
 ____________________________________________________________
 Shan: Bye! See you soon.
 ____________________________________________________________
+```
+
+### UI-005: Save tasks after list changes
+
+**Aim:** Verify that ToDo, Deadline, and Event tasks are serialized and that marking and deleting update the data file.
+
+**Inputs:**
+
+1. `todo read book`
+2. `deadline return book /by Sunday`
+3. `event project meeting /from Mon 2pm /to 4pm`
+4. `mark 1`
+5. `delete 2`
+6. `bye`
+
+**Expected outputs:**
+
+1. Output caused by `todo read book`:
+
+```text
+____________________________________________________________
+Shan: I Gotchu. I've added this:
+  [T][ ] read book
+Now you have 1 tasks.
+____________________________________________________________
+```
+
+2. Output caused by `deadline return book /by Sunday`:
+
+```text
+____________________________________________________________
+Shan: I Gotchu. I've added this:
+  [D][ ] return book (by: Sunday)
+Now you have 2 tasks.
+____________________________________________________________
+```
+
+3. Output caused by `event project meeting /from Mon 2pm /to 4pm`:
+
+```text
+____________________________________________________________
+Shan: I Gotchu. I've added this:
+  [E][ ] project meeting (from: Mon 2pm to: 4pm)
+Now you have 3 tasks.
+____________________________________________________________
+```
+
+4. Output caused by `mark 1`:
+
+```text
+____________________________________________________________
+Shan: Well done! I have marked this task as done!
+  [T][X] read book
+____________________________________________________________
+```
+
+5. Output caused by `delete 2`:
+
+```text
+____________________________________________________________
+Shan: Noted. I've removed this task:
+  [D][ ] return book (by: Sunday)
+Now you have 2 tasks.
+____________________________________________________________
+```
+
+6. Output caused by `bye`:
+
+```text
+____________________________________________________________
+Shan: Bye! See you soon.
+____________________________________________________________
+```
+
+**Expected data file after each list change:**
+
+1. After `todo read book`:
+
+```text
+T | 0 | read book
+```
+
+2. After `deadline return book /by Sunday`:
+
+```text
+T | 0 | read book
+D | 0 | return book | Sunday
+```
+
+3. After `event project meeting /from Mon 2pm /to 4pm`:
+
+```text
+T | 0 | read book
+D | 0 | return book | Sunday
+E | 0 | project meeting | Mon 2pm | 4pm
+```
+
+4. After `mark 1`:
+
+```text
+T | 1 | read book
+D | 0 | return book | Sunday
+E | 0 | project meeting | Mon 2pm | 4pm
+```
+
+5. After `delete 2`:
+
+```text
+T | 1 | read book
+E | 0 | project meeting | Mon 2pm | 4pm
 ```
 
 ### UI-002: Reject malformed task commands
@@ -349,6 +500,221 @@ ____________________________________________________________
 ```
 
 7. Output caused by `bye`:
+
+```text
+____________________________________________________________
+Shan: Bye! See you soon.
+____________________________________________________________
+```
+
+### UI-007: Skip malformed saved tasks
+
+**Aim:** Verify that Shan loads valid entries, skips malformed entries, and reports how many were skipped.
+
+**Initial data file:**
+
+```text
+T | 1 | read book
+D | 0 | missing deadline
+D | 0 | return book |
+E | 0 | meeting | Mon | 4pm | extra
+X | 0 | unknown type
+T | 2 | invalid status
+E | 0 | valid meeting | Mon 2pm | 4pm
+```
+
+**Expected startup warning:**
+
+```text
+____________________________________________________________
+Shan: Warning: I skipped 5 invalid task entries in data/shan.txt.
+____________________________________________________________
+```
+
+**Inputs:**
+
+1. `list`
+2. `bye`
+
+**Expected outputs:**
+
+1. Output caused by `list`:
+
+```text
+____________________________________________________________
+Shan: Here are the tasks in your list:
+1.[T][X] read book
+2.[E][ ] valid meeting (from: Mon 2pm to: 4pm)
+____________________________________________________________
+```
+
+2. Output caused by `bye`:
+
+```text
+____________________________________________________________
+Shan: Bye! See you soon.
+____________________________________________________________
+```
+
+### UI-008: Handle read and write failures
+
+**Aim:** Verify that an unusable data path does not crash Shan and that a failed addition is rolled back.
+
+**Initial filesystem:** `data/shan.txt` is a directory rather than a file.
+
+**Expected startup warning:**
+
+```text
+____________________________________________________________
+Shan: I couldn't read data/shan.txt. Starting with an empty task list.
+____________________________________________________________
+```
+
+**Inputs:**
+
+1. `todo read book`
+2. `list`
+3. `bye`
+
+**Expected outputs:**
+
+1. Output caused by `todo read book`:
+
+```text
+____________________________________________________________
+Shan: I couldn't save your tasks to data/shan.txt.
+____________________________________________________________
+```
+
+2. Output caused by `list`:
+
+```text
+____________________________________________________________
+Shan: Here are the tasks in your list:
+____________________________________________________________
+```
+
+3. Output caused by `bye`:
+
+```text
+____________________________________________________________
+Shan: Bye! See you soon.
+____________________________________________________________
+```
+
+### UI-009: Reject the save-file delimiter in task fields
+
+**Aim:** Verify that task fields containing `|` are rejected before they can corrupt the data file.
+
+**Inputs:**
+
+1. `todo read | book`
+2. `deadline return book /by Sun | day`
+3. `event project meeting /from Mon | 2pm /to 4pm`
+4. `list`
+5. `bye`
+
+**Expected outputs:**
+
+1. Output caused by `todo read | book`:
+
+```text
+____________________________________________________________
+Shan: Task details cannot contain |.
+____________________________________________________________
+```
+
+2. Output caused by `deadline return book /by Sun | day`:
+
+```text
+____________________________________________________________
+Shan: Task details cannot contain |.
+____________________________________________________________
+```
+
+3. Output caused by `event project meeting /from Mon | 2pm /to 4pm`:
+
+```text
+____________________________________________________________
+Shan: Task details cannot contain |.
+____________________________________________________________
+```
+
+4. Output caused by `list`:
+
+```text
+____________________________________________________________
+Shan: Here are the tasks in your list:
+____________________________________________________________
+```
+
+5. Output caused by `bye`:
+
+```text
+____________________________________________________________
+Shan: Bye! See you soon.
+____________________________________________________________
+```
+
+### UI-010: Roll back unsaved task changes
+
+**Aim:** Verify that failed mark, unmark, and delete operations leave the in-memory task list unchanged.
+
+**Initial data file:**
+
+```text
+T | 0 | read book
+T | 1 | write book
+```
+
+**After startup:** Move the data file aside and create a directory at
+`data/shan.txt` so every subsequent save attempt fails.
+
+**Inputs:**
+
+1. `mark 1`
+2. `unmark 2`
+3. `delete 1`
+4. `list`
+5. `bye`
+
+**Expected outputs:**
+
+1. Output caused by `mark 1`:
+
+```text
+____________________________________________________________
+Shan: I couldn't save your tasks to data/shan.txt.
+____________________________________________________________
+```
+
+2. Output caused by `unmark 2`:
+
+```text
+____________________________________________________________
+Shan: I couldn't save your tasks to data/shan.txt.
+____________________________________________________________
+```
+
+3. Output caused by `delete 1`:
+
+```text
+____________________________________________________________
+Shan: I couldn't save your tasks to data/shan.txt.
+____________________________________________________________
+```
+
+4. Output caused by `list`:
+
+```text
+____________________________________________________________
+Shan: Here are the tasks in your list:
+1.[T][ ] read book
+2.[T][X] write book
+____________________________________________________________
+```
+
+5. Output caused by `bye`:
 
 ```text
 ____________________________________________________________
