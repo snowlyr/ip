@@ -21,6 +21,14 @@ public class AddCommand extends Command {
         this.task = task;
     }
 
+    /**
+     * Adds the task, saves the updated list, and reports the result.
+     *
+     * @param tasks   Task list to update.
+     * @param ui      User interface through which to report the result.
+     * @param storage Storage used to persist the updated task list.
+     * @throws DataFileException If the updated task list cannot be saved.
+     */
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) throws DataFileException {
         tasks.add(this.task);

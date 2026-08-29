@@ -22,6 +22,15 @@ public class UnmarkCommand extends Command {
         this.taskNumber = taskNumber;
     }
 
+    /**
+     * Marks the selected task as incomplete, saves the change, and reports the result.
+     *
+     * @param tasks   Task list containing the task to unmark.
+     * @param ui      User interface through which to report the result.
+     * @param storage Storage used to persist the updated task list.
+     * @throws InvalidArgumentException If the task number does not exist.
+     * @throws DataFileException        If the updated task list cannot be saved.
+     */
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage)
             throws InvalidArgumentException, DataFileException {

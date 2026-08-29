@@ -26,6 +26,13 @@ public class OnCommand extends Command {
         this.endDate = endDate;
     }
 
+    /**
+     * Displays dated tasks that overlap this command's inclusive date range.
+     *
+     * @param tasks   Task list to search.
+     * @param ui      User interface through which to display matching tasks.
+     * @param storage Storage collaborator; unused because searching does not persist changes.
+     */
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) {
         boolean isRange = !this.startDate.equals(this.endDate);
