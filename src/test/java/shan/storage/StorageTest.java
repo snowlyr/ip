@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -119,4 +120,38 @@ class StorageTest {
 
         assertThrows(DataFileException.class, () -> storage.save(tasks));
     }
+
+    @Test
+    void save_emptyTaskList_createsEmptyDataFile() throws DataFileException, IOException {
+        Path dataFile = this.tempDirectory.resolve("shan.txt");
+        Storage storage = new Storage(dataFile);
+
+        storage.save(List.of());
+
+        assertTrue(Files.isRegularFile(dataFile));
+        assertEquals("", Files.readString(dataFile));
+    }
+
+    @Test
+    void getFilePath_pathContainsBackslashes_returnsForwardSlashes() {
+        Storage storage = new Storage(Path.of("data\\nested\\shan.txt"));
+
+        assertEquals("data/nested/shan.txt", storage.getFilePath());
+    }
+
+    @Test
+    void loadResult_sourceListChanged_resultRemainsImmutable() {
+        Task task = new ToDo("read book");
+        ArrayList<Task> sourceTasks = new ArrayList<>(List.of(task));
+        Storage.LoadResult result = new Storage.LoadResult(sourceTasks, 2);
+
+        sourceTasks.clear();
+
+        assertEquals(1, result.tasks().size());
+        assertEquals(2, result.skippedTasks());
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> result.tasks().add(new ToDo("write book")));
+    }
+
 }

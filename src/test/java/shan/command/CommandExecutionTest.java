@@ -1,0 +1,236 @@
+package shan.command;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.junit.jupiter.api.Test;
+
+import shan.exception.DataFileException;
+import shan.exception.InvalidArgumentException;
+import shan.storage.Storage;
+import shan.task.Deadline;
+import shan.task.Event;
+import shan.task.Task;
+import shan.task.TaskList;
+import shan.task.ToDo;
+import shan.ui.Ui;
+
+class CommandExecutionTest {
+    @Test
+    void add_execute_saveSucceeds_addsAndPersistsTask() throws DataFileException {
+        TaskList tasks = new TaskList();
+        Task task = new ToDo("read book");
+        RecordingUi ui = new RecordingUi();
+        RecordingStorage storage = new RecordingStorage(false);
+
+        new AddCommand(task).execute(tasks, ui, storage);
+
+        assertEquals(1, tasks.size());
+        assertSame(task, tasks.get(1));
+        assertEquals(List.of(task), storage.savedTasks());
+        assertTrue(ui.message().contains("I've added this"));
+    }
+
+    @Test
+    void add_execute_saveFails_removesAddedTask() {
+        TaskList tasks = new TaskList();
+        RecordingUi ui = new RecordingUi();
+        RecordingStorage storage = new RecordingStorage(true);
+
+        assertThrows(
+                DataFileException.class,
+                () -> new AddCommand(new ToDo("read book")).execute(tasks, ui, storage));
+
+        assertEquals(0, tasks.size());
+        assertNull(ui.message());
+    }
+
+    @Test
+    void delete_execute_validTask_deletesAndPersistsRemainingTasks()
+            throws InvalidArgumentException, DataFileException {
+        Task firstTask = new ToDo("first task");
+        Task secondTask = new ToDo("second task");
+        TaskList tasks = taskListOf(firstTask, secondTask);
+        RecordingUi ui = new RecordingUi();
+        RecordingStorage storage = new RecordingStorage(false);
+
+        new DeleteCommand(1).execute(tasks, ui, storage);
+
+        assertEquals(1, tasks.size());
+        assertSame(secondTask, tasks.get(1));
+        assertEquals(List.of(secondTask), storage.savedTasks());
+    }
+
+    @Test
+    void delete_execute_invalidTaskNumber_exceptionThrownWithoutSaving() {
+        TaskList tasks = taskListOf(new ToDo("read book"));
+        RecordingUi ui = new RecordingUi();
+        RecordingStorage storage = new RecordingStorage(false);
+
+        assertThrows(
+                InvalidArgumentException.class,
+                () -> new DeleteCommand(2).execute(tasks, ui, storage));
+
+        assertEquals(1, tasks.size());
+        assertEquals(0, storage.saveCalls());
+        assertNull(ui.message());
+    }
+
+    @Test
+    void delete_execute_saveFails_restoresTaskAtOriginalPosition() {
+        Task firstTask = new ToDo("first task");
+        Task secondTask = new ToDo("second task");
+        TaskList tasks = taskListOf(firstTask, secondTask);
+        RecordingUi ui = new RecordingUi();
+        RecordingStorage storage = new RecordingStorage(true);
+
+        assertThrows(
+                DataFileException.class,
+                () -> new DeleteCommand(1).execute(tasks, ui, storage));
+
+        assertEquals(2, tasks.size());
+        assertSame(firstTask, tasks.get(1));
+        assertSame(secondTask, tasks.get(2));
+        assertNull(ui.message());
+    }
+
+    @Test
+    void mark_execute_validTask_marksAndPersistsTask()
+            throws InvalidArgumentException, DataFileException {
+        Task task = new ToDo("read book");
+        TaskList tasks = taskListOf(task);
+        RecordingUi ui = new RecordingUi();
+        RecordingStorage storage = new RecordingStorage(false);
+
+        new MarkCommand(1).execute(tasks, ui, storage);
+
+        assertTrue(task.isDone());
+        assertEquals(List.of(task), storage.savedTasks());
+    }
+
+    @Test
+    void mark_execute_saveFails_restoresIncompleteState() {
+        Task task = new ToDo("read book");
+        TaskList tasks = taskListOf(task);
+        RecordingUi ui = new RecordingUi();
+        RecordingStorage storage = new RecordingStorage(true);
+
+        assertThrows(
+                DataFileException.class,
+                () -> new MarkCommand(1).execute(tasks, ui, storage));
+
+        assertFalse(task.isDone());
+        assertNull(ui.message());
+    }
+
+    @Test
+    void unmark_execute_validTask_unmarksAndPersistsTask()
+            throws InvalidArgumentException, DataFileException {
+        Task task = new ToDo("read book");
+        task.markDone();
+        TaskList tasks = taskListOf(task);
+        RecordingUi ui = new RecordingUi();
+        RecordingStorage storage = new RecordingStorage(false);
+
+        new UnmarkCommand(1).execute(tasks, ui, storage);
+
+        assertFalse(task.isDone());
+        assertEquals(List.of(task), storage.savedTasks());
+    }
+
+    @Test
+    void unmark_execute_saveFails_restoresCompletedState() {
+        Task task = new ToDo("read book");
+        task.markDone();
+        TaskList tasks = taskListOf(task);
+        RecordingUi ui = new RecordingUi();
+        RecordingStorage storage = new RecordingStorage(true);
+
+        assertThrows(
+                DataFileException.class,
+                () -> new UnmarkCommand(1).execute(tasks, ui, storage));
+
+        assertTrue(task.isDone());
+        assertNull(ui.message());
+    }
+
+    @Test
+    void on_execute_rangeQuery_displaysOnlyOverlappingDatedTasks() {
+        LocalDateTime deadlineDate = LocalDateTime.of(2019, 12, 3, 18, 0);
+        Task toDo = new ToDo("read book");
+        Task deadline = new Deadline("return book", deadlineDate);
+        Task event = new Event(
+                "project meeting",
+                LocalDateTime.of(2019, 12, 4, 14, 0),
+                LocalDateTime.of(2019, 12, 6, 16, 0));
+        TaskList tasks = taskListOf(toDo, deadline, event);
+        RecordingUi ui = new RecordingUi();
+        RecordingStorage storage = new RecordingStorage(false);
+
+        new OnCommand(
+                LocalDate.of(2019, 12, 3),
+                LocalDate.of(2019, 12, 5)).execute(tasks, ui, storage);
+
+        assertFalse(ui.message().contains("1.[T]"));
+        assertTrue(ui.message().contains("2.[D]"));
+        assertTrue(ui.message().contains("3.[E]"));
+        assertEquals(0, storage.saveCalls());
+    }
+
+    private TaskList taskListOf(Task... tasks) {
+        TaskList taskList = new TaskList();
+        taskList.replaceAll(List.of(tasks));
+        return taskList;
+    }
+
+    private static class RecordingUi extends Ui {
+        private String message;
+
+        @Override
+        public void showMessage(String message) {
+            this.message = message;
+        }
+
+        private String message() {
+            return this.message;
+        }
+    }
+
+    private static class RecordingStorage extends Storage {
+        private final boolean shouldFail;
+        private List<Task> savedTasks;
+        private int saveCalls;
+
+        RecordingStorage(boolean shouldFail) {
+            super(Path.of("unused"));
+            this.shouldFail = shouldFail;
+            this.savedTasks = List.of();
+        }
+
+        @Override
+        public void save(List<Task> tasks) throws DataFileException {
+            this.saveCalls++;
+            if (this.shouldFail) {
+                throw new DataFileException("Simulated save failure.");
+            }
+            this.savedTasks = List.copyOf(tasks);
+        }
+
+        private List<Task> savedTasks() {
+            return this.savedTasks;
+        }
+
+        private int saveCalls() {
+            return this.saveCalls;
+        }
+    }
+}
