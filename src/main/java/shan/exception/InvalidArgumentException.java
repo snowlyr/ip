@@ -1,4 +1,4 @@
-package shan;
+package shan.exception;
 
 /**
  * Represents a command argument that has an invalid value.

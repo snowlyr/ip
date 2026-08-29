@@ -1,4 +1,10 @@
-package shan;
+package shan.command;
+
+import shan.exception.DataFileException;
+import shan.storage.Storage;
+import shan.task.Task;
+import shan.task.TaskList;
+import shan.ui.Ui;
 
 /**
  * Adds a task and persists the updated task list.

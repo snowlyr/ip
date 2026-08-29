@@ -1,4 +1,9 @@
-package shan;
+package shan.command;
+
+import shan.exception.ShanException;
+import shan.storage.Storage;
+import shan.task.TaskList;
+import shan.ui.Ui;
 
 /**
  * Represents a user command that can act on Shan's collaborators.

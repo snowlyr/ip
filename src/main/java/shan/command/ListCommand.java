@@ -1,4 +1,8 @@
-package shan;
+package shan.command;
+
+import shan.storage.Storage;
+import shan.task.TaskList;
+import shan.ui.Ui;
 
 /**
  * Displays every task in the task list.

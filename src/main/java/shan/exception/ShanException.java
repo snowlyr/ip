@@ -1,4 +1,4 @@
-package shan;
+package shan.exception;
 
 /**
  * Represents an error that Shan can report to the user.
