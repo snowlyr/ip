@@ -1,0 +1,42 @@
+package shan.task;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.time.LocalDate;
+
+import org.junit.jupiter.api.Test;
+
+class TaskTest {
+    @Test
+    void markDone_incompleteTask_marksTaskAndReturnsUpdatedDisplay() {
+        Task task = new ToDo("read book");
+
+        String display = task.markDone();
+
+        assertTrue(task.isDone());
+        assertEquals("[T][X] read book", display);
+    }
+
+    @Test
+    void unmarkDone_completedTask_unmarksTaskAndReturnsUpdatedDisplay() {
+        Task task = new ToDo("read book");
+        task.markDone();
+
+        String display = task.unmarkDone();
+
+        assertFalse(task.isDone());
+        assertEquals("[T][ ] read book", display);
+    }
+
+    @Test
+    void occursBetween_undatedTask_returnsFalse() {
+        Task task = new ToDo("read book");
+
+        boolean result = task.occursBetween(
+                LocalDate.of(2019, 12, 1), LocalDate.of(2019, 12, 31));
+
+        assertFalse(result);
+    }
+}
