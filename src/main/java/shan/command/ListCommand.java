@@ -14,6 +14,13 @@ public class ListCommand extends Command {
     public ListCommand() {
     }
 
+    /**
+     * Displays every task in its current numbered order.
+     *
+     * @param tasks   Task list to display.
+     * @param ui      User interface through which to display the tasks.
+     * @param storage Storage collaborator; unused because listing does not persist changes.
+     */
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) {
         StringBuilder result = new StringBuilder("Here are the tasks in your list:");
