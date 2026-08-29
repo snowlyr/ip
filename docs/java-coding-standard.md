@@ -23,6 +23,10 @@ Sources:
 
 - Name classes and enums with nouns in `PascalCase`.
 - Name methods with verbs in `camelCase`.
+- For test methods, underscores may separate the feature, scenario, and expected
+  behavior, e.g., `parse_blankInput_exceptionThrown()`.
+- Capitalize acronyms as normal words when they form part of a name, e.g.,
+  `exportHtmlSource()` rather than `exportHTMLSource()`.
 - Name variables in `camelCase` and constants in `SCREAMING_SNAKE_CASE`.
 - Give booleans names that read as true-or-false conditions, such as `isDone`,
   `hasData`, or `wasLoaded`.
@@ -67,7 +71,8 @@ Sources:
 
 ## Javadoc and comments
 
-- Write comments and identifiers in clear English and use American spelling.
+- Write comments and identifiers in clear English, use American spelling, and
+  avoid slang.
 - Add Javadoc to every public class, constructor, and method, except obvious
   getters, setters, and methods whose inherited documentation is sufficient.
 - Start a Javadoc summary with a short third-person verb, such as `Returns`,
