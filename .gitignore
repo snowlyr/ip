@@ -23,3 +23,8 @@ text-ui-test/EXPECTED-UNIX.TXT
 
 # Runtime chatbot data
 /data/
+
+# Eclipse and JDT Language Server files
+/.classpath
+/.project
+/.settings/
