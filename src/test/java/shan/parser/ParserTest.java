@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import shan.command.AddCommand;
 import shan.command.DeleteCommand;
 import shan.command.ExitCommand;
+import shan.command.FindCommand;
 import shan.command.ListCommand;
 import shan.command.MarkCommand;
 import shan.command.OnCommand;
@@ -30,6 +31,7 @@ class ParserTest {
     void parse_supportedCommands_returnsMatchingCommandTypes() throws ShanException {
         assertInstanceOf(ExitCommand.class, Parser.parse("bye"));
         assertInstanceOf(ListCommand.class, Parser.parse("list"));
+        assertInstanceOf(FindCommand.class, Parser.parse("find book"));
         assertInstanceOf(MarkCommand.class, Parser.parse("mark 1"));
         assertInstanceOf(UnmarkCommand.class, Parser.parse("unmark 1"));
         assertInstanceOf(DeleteCommand.class, Parser.parse("delete 1"));
@@ -56,7 +58,12 @@ class ParserTest {
 
     @Test
     void parse_unknownCommand_exceptionThrown() {
-        assertThrows(InvalidCommandException.class, () -> Parser.parse("find book"));
+        assertThrows(InvalidCommandException.class, () -> Parser.parse("search book"));
+    }
+
+    @Test
+    void parse_findWithoutKeyword_exceptionThrown() {
+        assertThrows(MissingArgumentException.class, () -> Parser.parse("find"));
     }
 
     @Test

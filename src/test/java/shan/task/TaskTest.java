@@ -39,4 +39,19 @@ class TaskTest {
 
         assertFalse(result);
     }
+
+    @Test
+    void containsKeyword_partialKeywordWithDifferentCase_returnsTrue() {
+        Task task = new ToDo("Read Book");
+
+        assertTrue(task.containsKeyword("book"));
+    }
+
+    @Test
+    void containsKeyword_absentKeyword_returnsFalse() {
+        Task task = new ToDo("read book");
+
+        assertFalse(task.containsKeyword("write"));
+    }
+
 }

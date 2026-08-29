@@ -1,6 +1,7 @@
 package shan.task;
 
 import java.time.LocalDate;
+import java.util.Locale;
 
 /**
  * Represents a task that can be marked as completed.
@@ -66,6 +67,18 @@ public abstract class Task {
      */
     public boolean occursBetween(LocalDate startDate, LocalDate endDate) {
         return false;
+    }
+
+    /**
+     * Returns whether this task's description contains the supplied keyword.
+     * Matching is case-insensitive.
+     *
+     * @param keyword Keyword to find in the task description.
+     * @return {@code true} when the description contains the keyword.
+     */
+    public boolean containsKeyword(String keyword) {
+        return this.taskName.toLowerCase(Locale.ROOT)
+                .contains(keyword.toLowerCase(Locale.ROOT));
     }
 
     /**
