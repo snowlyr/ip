@@ -26,8 +26,10 @@ Unless the user says otherwise, assume that you are assisting a student working 
 
 ## Java coding standard
 
-Before creating or editing Java code, read and follow
-[`docs/java-coding-standard.md`](docs/java-coding-standard.md).
+Before creating, editing, or reviewing Java code, use the project-specific
+[`seedu-java-coding-standard`](.codex/skills/seedu-java-coding-standard/SKILL.md)
+skill and follow [`docs/java-coding-standard.md`](docs/java-coding-standard.md).
+This requirement applies to production and test code.
 
 ## Java version:
 
@@ -46,6 +48,10 @@ suite with `./gradlew test` before finishing the change.
 
 ## Git
 
+Before proposing or creating commits, branches, merges, or tags, use the
+project-specific
+[`seedu-git-standard`](.codex/skills/seedu-git-standard/SKILL.md) skill. All
+future commits must follow that skill's SE-EDU conventions.
+
 Use lightweight tags unless the user requests an annotated tag.
-When proposing or creating a commit message, include enough detail to explain the rationale for the change.
 Do not commit or push unless explicitly asked.
