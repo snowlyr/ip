@@ -128,4 +128,29 @@ class TaskListTest {
         assertEquals(0, tasks.size());
         assertFalse(tasks.containsTaskNumber(1));
     }
+
+    @Test
+    void find_matchingDescriptions_returnsMatchesInOriginalOrder() {
+        Task firstMatch = new ToDo("read book");
+        Task nonMatch = new ToDo("write report");
+        Task secondMatch = new ToDo("return BOOK");
+        TaskList tasks = new TaskList();
+        tasks.replaceAll(List.of(firstMatch, nonMatch, secondMatch));
+
+        List<Task> matches = tasks.find("book");
+
+        assertEquals(List.of(firstMatch, secondMatch), matches);
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> matches.add(new ToDo("book flight")));
+    }
+
+    @Test
+    void find_noMatchingDescription_returnsEmptyList() {
+        TaskList tasks = new TaskList();
+        tasks.add(new ToDo("read book"));
+
+        assertTrue(tasks.find("report").isEmpty());
+    }
+
 }

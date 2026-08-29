@@ -8,6 +8,7 @@ import shan.command.AddCommand;
 import shan.command.Command;
 import shan.command.DeleteCommand;
 import shan.command.ExitCommand;
+import shan.command.FindCommand;
 import shan.command.ListCommand;
 import shan.command.MarkCommand;
 import shan.command.OnCommand;
@@ -32,6 +33,8 @@ public final class Parser {
         BYE,
         /** Lists all tasks. */
         LIST,
+        /** Finds tasks whose descriptions contain a keyword. */
+        FIND,
         /** Marks a task as completed. */
         MARK,
         /** Marks a task as not completed. */
@@ -77,6 +80,7 @@ public final class Parser {
         return switch (commandType) {
             case BYE -> new ExitCommand();
             case LIST -> new ListCommand();
+            case FIND -> parseFindCommand(arguments);
             case MARK -> new MarkCommand(parseTaskNumber(arguments));
             case UNMARK -> new UnmarkCommand(parseTaskNumber(arguments));
             case DELETE -> new DeleteCommand(parseTaskNumber(arguments));
@@ -85,6 +89,21 @@ public final class Parser {
             case DEADLINE -> new AddCommand(parseDeadline(arguments));
             case EVENT -> new AddCommand(parseEvent(arguments));
         };
+    }
+
+    /**
+     * Parses a keyword search into an executable command.
+     *
+     * @param argument Keyword entered by the user.
+     * @return Command containing the normalized keyword.
+     * @throws MissingArgumentException If the keyword is missing.
+     */
+    private static FindCommand parseFindCommand(String argument)
+            throws MissingArgumentException {
+        if (argument.isBlank()) {
+            throw new MissingArgumentException("Specify a keyword to find.");
+        }
+        return new FindCommand(argument.trim());
     }
 
     /**

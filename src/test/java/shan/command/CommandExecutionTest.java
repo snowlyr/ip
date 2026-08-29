@@ -186,6 +186,38 @@ class CommandExecutionTest {
         assertEquals(0, storage.saveCalls());
     }
 
+    @Test
+    void find_execute_matchingTasks_displaysRenumberedMatchesWithoutSaving() {
+        Task nonMatch = new ToDo("write report");
+        Task firstMatch = new ToDo("read book");
+        Task secondMatch = new Deadline(
+                "return BOOK", LocalDateTime.of(2019, 12, 3, 18, 0));
+        TaskList tasks = taskListOf(nonMatch, firstMatch, secondMatch);
+        RecordingUi ui = new RecordingUi();
+        RecordingStorage storage = new RecordingStorage(false);
+
+        new FindCommand("book").execute(tasks, ui, storage);
+
+        assertEquals(
+                "Here are the matching tasks in your list:\n"
+                        + "1.[T][ ] read book\n"
+                        + "2.[D][ ] return BOOK (by: Dec 03 2019, 6:00 PM)",
+                ui.message());
+        assertEquals(0, storage.saveCalls());
+    }
+
+    @Test
+    void find_execute_noMatchingTask_displaysEmptyResultWithoutSaving() {
+        TaskList tasks = taskListOf(new ToDo("read book"));
+        RecordingUi ui = new RecordingUi();
+        RecordingStorage storage = new RecordingStorage(false);
+
+        new FindCommand("report").execute(tasks, ui, storage);
+
+        assertEquals("Here are the matching tasks in your list:", ui.message());
+        assertEquals(0, storage.saveCalls());
+    }
+
     private TaskList taskListOf(Task... tasks) {
         TaskList taskList = new TaskList();
         taskList.replaceAll(List.of(tasks));

@@ -905,3 +905,135 @@ ____________________________________________________________
 Shan: Bye! See you soon.
 ____________________________________________________________
 ```
+
+### UI-013: Find tasks by description keyword
+
+**Aim:** Verify that Shan finds task descriptions case-insensitively, displays
+matches in their original order, renumbers the results, and rejects a missing
+keyword without changing the task list.
+
+**Inputs:**
+
+1. `todo read book`
+2. `mark 1`
+3. `deadline return book /by 2019-12-02 18:00`
+4. `mark 2`
+5. `event project meeting /from 2019-12-03 14:00 /to 2019-12-03 16:00`
+6. `find book`
+7. `find BOOK`
+8. `find meeting`
+9. `find Dec`
+10. `find`
+11. `bye`
+
+**Expected outputs:**
+
+1. Output caused by `todo read book`:
+
+```text
+____________________________________________________________
+Shan: I Gotchu. I've added this:
+  [T][ ] read book
+Now you have 1 tasks.
+____________________________________________________________
+```
+
+2. Output caused by `mark 1`:
+
+```text
+____________________________________________________________
+Shan: Well done! I have marked this task as done!
+  [T][X] read book
+____________________________________________________________
+```
+
+3. Output caused by `deadline return book /by 2019-12-02 18:00`:
+
+```text
+____________________________________________________________
+Shan: I Gotchu. I've added this:
+  [D][ ] return book (by: Dec 02 2019, 6:00 PM)
+Now you have 2 tasks.
+____________________________________________________________
+```
+
+4. Output caused by `mark 2`:
+
+```text
+____________________________________________________________
+Shan: Well done! I have marked this task as done!
+  [D][X] return book (by: Dec 02 2019, 6:00 PM)
+____________________________________________________________
+```
+
+5. Output caused by
+`event project meeting /from 2019-12-03 14:00 /to 2019-12-03 16:00`:
+
+```text
+____________________________________________________________
+Shan: I Gotchu. I've added this:
+  [E][ ] project meeting (from: Dec 03 2019, 2:00 PM to: Dec 03 2019, 4:00 PM)
+Now you have 3 tasks.
+____________________________________________________________
+```
+
+6. Output caused by `find book`:
+
+```text
+____________________________________________________________
+Shan: Here are the matching tasks in your list:
+1.[T][X] read book
+2.[D][X] return book (by: Dec 02 2019, 6:00 PM)
+____________________________________________________________
+```
+
+7. Output caused by `find BOOK`:
+
+```text
+____________________________________________________________
+Shan: Here are the matching tasks in your list:
+1.[T][X] read book
+2.[D][X] return book (by: Dec 02 2019, 6:00 PM)
+____________________________________________________________
+```
+
+8. Output caused by `find meeting`:
+
+```text
+____________________________________________________________
+Shan: Here are the matching tasks in your list:
+1.[E][ ] project meeting (from: Dec 03 2019, 2:00 PM to: Dec 03 2019, 4:00 PM)
+____________________________________________________________
+```
+
+9. Output caused by `find Dec`:
+
+```text
+____________________________________________________________
+Shan: Here are the matching tasks in your list:
+____________________________________________________________
+```
+
+10. Output caused by `find`:
+
+```text
+____________________________________________________________
+Shan: Specify a keyword to find.
+____________________________________________________________
+```
+
+11. Output caused by `bye`:
+
+```text
+____________________________________________________________
+Shan: Bye! See you soon.
+____________________________________________________________
+```
+
+**Expected final data file:**
+
+```text
+T | 1 | read book
+D | 1 | return book | 2019-12-02 18:00
+E | 0 | project meeting | 2019-12-03 14:00 | 2019-12-03 16:00
+```
