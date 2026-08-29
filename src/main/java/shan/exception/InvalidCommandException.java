@@ -1,4 +1,4 @@
-package shan;
+package shan.exception;
 
 /**
  * Represents a command that Shan does not recognize or cannot process.

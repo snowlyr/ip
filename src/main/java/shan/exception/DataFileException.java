@@ -1,4 +1,4 @@
-package shan;
+package shan.exception;
 
 /**
  * Represents a failure to read or write Shan's task data file.

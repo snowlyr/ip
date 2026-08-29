@@ -5,7 +5,7 @@ This file is the source of truth for Shan's console UI tests. Test cases run in 
 ## Test configuration
 
 - Required Java version: 25
-- Compile command: `javac -d <temporary-class-directory> src/main/java/shan/*.java`
+- Compile command: `javac -d <temporary-class-directory> -sourcepath src/main/java src/main/java/shan/Shan.java`
 - Run command: `java -cp <temporary-class-directory> shan.Shan`
 - Data file: `data/shan.txt`
 - Data setup: remove the data file before each test case unless the test case

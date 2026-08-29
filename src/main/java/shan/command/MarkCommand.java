@@ -1,4 +1,11 @@
-package shan;
+package shan.command;
+
+import shan.exception.DataFileException;
+import shan.exception.InvalidArgumentException;
+import shan.storage.Storage;
+import shan.task.Task;
+import shan.task.TaskList;
+import shan.ui.Ui;
 
 /**
  * Marks a task as done and persists the change.

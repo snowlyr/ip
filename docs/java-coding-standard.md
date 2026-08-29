@@ -88,14 +88,15 @@ Sources:
 - Compile with Java 25 and enable compiler warnings:
 
   ```bash
-  javac -Xlint:all -d out src/main/java/shan/*.java
+  javac -Xlint:all -d out -sourcepath src/main/java \
+      src/main/java/shan/Shan.java
   ```
 
 - Check Javadoc when public APIs changed:
 
   ```bash
   javadoc -quiet -Xdoclint:all -d /tmp/shan-javadocs \
-      src/main/java/shan/*.java
+      -sourcepath src/main/java -subpackages shan
   ```
 
 - Run the relevant automated and UI tests.

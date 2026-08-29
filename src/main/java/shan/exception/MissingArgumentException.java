@@ -1,4 +1,4 @@
-package shan;
+package shan.exception;
 
 /**
  * Represents a command that is missing a required argument.

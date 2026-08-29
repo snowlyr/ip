@@ -1,4 +1,4 @@
-package shan;
+package shan.ui;
 
 import java.util.Scanner;
 
