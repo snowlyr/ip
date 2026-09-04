@@ -2,10 +2,12 @@ package shan.ui;
 
 import java.util.Scanner;
 
+import shan.ResponseSink;
+
 /**
  * Handles console input and output for Shan.
  */
-public class Ui {
+public class Ui implements ResponseSink {
     private static final String DIVIDER = "____________________________________________________________";
     private static final String BANNER = " ____  _\n"
             + "/ ___|| |__   __ _ _ __\n"
@@ -55,6 +57,7 @@ public class Ui {
      *
      * @param message Message to display.
      */
+    @Override
     public void showMessage(String message) {
         System.out.println(DIVIDER);
         System.out.println("Shan: " + message);

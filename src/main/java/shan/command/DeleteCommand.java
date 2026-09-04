@@ -1,11 +1,11 @@
 package shan.command;
 
+import shan.ResponseSink;
 import shan.exception.DataFileException;
 import shan.exception.InvalidArgumentException;
 import shan.storage.Storage;
 import shan.task.Task;
 import shan.task.TaskList;
-import shan.ui.Ui;
 
 /**
  * Deletes a task and persists the updated task list.
@@ -26,13 +26,13 @@ public class DeleteCommand extends Command {
      * Deletes the selected task, saves the updated list, and reports the result.
      *
      * @param tasks   Task list to update.
-     * @param ui      User interface through which to report the result.
+     * @param responseSink Receives the message produced by the command.
      * @param storage Storage used to persist the updated task list.
      * @throws InvalidArgumentException If the task number does not exist.
      * @throws DataFileException        If the updated task list cannot be saved.
      */
     @Override
-    public void execute(TaskList tasks, Ui ui, Storage storage)
+    public void execute(TaskList tasks, ResponseSink responseSink, Storage storage)
             throws InvalidArgumentException, DataFileException {
         if (!tasks.containsTaskNumber(this.taskNumber)) {
             throw new InvalidArgumentException("Woopsies, this task does not exist!!");
@@ -45,7 +45,7 @@ public class DeleteCommand extends Command {
             tasks.restore(this.taskNumber, removedTask);
             throw exception;
         }
-        ui.showMessage(String.format(
+        responseSink.showMessage(String.format(
                 "Noted. I've removed this task:\n  %s\nNow you have %d tasks.",
                 removedTask, tasks.size()));
     }

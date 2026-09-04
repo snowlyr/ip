@@ -1,8 +1,8 @@
 package shan.command;
 
+import shan.ResponseSink;
 import shan.storage.Storage;
 import shan.task.TaskList;
-import shan.ui.Ui;
 
 /**
  * Displays the farewell message and exits Shan.
@@ -18,12 +18,12 @@ public class ExitCommand extends Command {
      * Displays Shan's farewell message.
      *
      * @param tasks   Task list collaborator; unchanged by this command.
-     * @param ui      User interface through which to display the farewell.
+     * @param responseSink Receives the message produced by the command.
      * @param storage Storage collaborator; unused because exiting does not persist changes.
      */
     @Override
-    public void execute(TaskList tasks, Ui ui, Storage storage) {
-        ui.showMessage("Bye! See you soon.");
+    public void execute(TaskList tasks, ResponseSink responseSink, Storage storage) {
+        responseSink.showMessage("Bye! See you soon.");
     }
 
     /**

@@ -1,9 +1,9 @@
 package shan.command;
 
+import shan.ResponseSink;
 import shan.exception.ShanException;
 import shan.storage.Storage;
 import shan.task.TaskList;
-import shan.ui.Ui;
 
 /**
  * Represents a user command that can act on Shan's collaborators.
@@ -19,11 +19,11 @@ public abstract class Command {
      * Executes this command.
      *
      * @param tasks   Task list on which the command operates.
-     * @param ui      User interface through which the command responds.
+     * @param responseSink Receives the message produced by the command.
      * @param storage Storage used to persist task changes.
      * @throws ShanException If the command cannot be completed.
      */
-    public abstract void execute(TaskList tasks, Ui ui, Storage storage) throws ShanException;
+    public abstract void execute(TaskList tasks, ResponseSink responseSink, Storage storage) throws ShanException;
 
     /**
      * Returns whether Shan should exit after executing this command.
