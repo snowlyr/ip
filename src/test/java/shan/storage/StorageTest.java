@@ -150,8 +150,7 @@ class StorageTest {
         assertEquals(1, result.tasks().size());
         assertEquals(2, result.skippedTasks());
         assertThrows(
-                UnsupportedOperationException.class,
-                () -> result.tasks().add(new ToDo("write book")));
+                UnsupportedOperationException.class, () -> result.tasks().add(new ToDo("write book")));
     }
 
 }

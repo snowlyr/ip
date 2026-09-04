@@ -114,8 +114,8 @@ class TaskListTest {
 
         assertEquals(1, snapshot.size());
         assertSame(firstTask, snapshot.get(0));
-        assertThrows(UnsupportedOperationException.class,
-                () -> snapshot.add(new ToDo("third task")));
+        assertThrows(
+                UnsupportedOperationException.class, () -> snapshot.add(new ToDo("third task")));
     }
 
     @Test
@@ -141,8 +141,7 @@ class TaskListTest {
 
         assertEquals(List.of(firstMatch, secondMatch), matches);
         assertThrows(
-                UnsupportedOperationException.class,
-                () -> matches.add(new ToDo("book flight")));
+                UnsupportedOperationException.class, () -> matches.add(new ToDo("book flight")));
     }
 
     @Test
