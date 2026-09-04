@@ -56,7 +56,7 @@ test {
 }
 
 application {
-    mainClass.set("Launcher")
+    mainClass.set('shan.gui.Launcher')
 }
 
 jar {
