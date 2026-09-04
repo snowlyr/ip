@@ -112,16 +112,14 @@ class DateTimeParserTest {
 
     private void assertInvalidDateTime(String input) {
         InvalidArgumentException exception = assertThrows(
-                InvalidArgumentException.class,
-                () -> DateTimeParser.parse(input));
+                InvalidArgumentException.class, () -> DateTimeParser.parse(input));
 
         assertEquals(INVALID_DATE_TIME_MESSAGE, exception.getMessage());
     }
 
     private void assertInvalidDate(String input) {
         InvalidArgumentException exception = assertThrows(
-                InvalidArgumentException.class,
-                () -> DateTimeParser.parseDate(input));
+                InvalidArgumentException.class, () -> DateTimeParser.parseDate(input));
 
         assertEquals(INVALID_DATE_MESSAGE, exception.getMessage());
     }

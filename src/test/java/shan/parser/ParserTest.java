@@ -108,32 +108,27 @@ class ParserTest {
     @Test
     void parseDeadline_missingByDelimiter_exceptionThrown() {
         assertThrows(
-                MissingArgumentException.class,
-                () -> Parser.parseDeadline("return book 2019-12-02 18:00"));
+                MissingArgumentException.class, () -> Parser.parseDeadline("return book 2019-12-02 18:00"));
     }
 
     @Test
     void parseDeadline_missingRequiredField_exceptionThrown() {
         assertThrows(
-                MissingArgumentException.class,
-                () -> Parser.parseDeadline("return book /by "));
+                MissingArgumentException.class, () -> Parser.parseDeadline("return book /by "));
         assertThrows(
-                MissingArgumentException.class,
-                () -> Parser.parseDeadline(" /by 2019-12-02 18:00"));
+                MissingArgumentException.class, () -> Parser.parseDeadline(" /by 2019-12-02 18:00"));
     }
 
     @Test
     void parseDeadline_invalidDateTime_exceptionThrown() {
         assertThrows(
-                InvalidArgumentException.class,
-                () -> Parser.parseDeadline("return book /by 2019-02-29 18:00"));
+                InvalidArgumentException.class, () -> Parser.parseDeadline("return book /by 2019-02-29 18:00"));
     }
 
     @Test
     void parseDeadline_fieldContainsFileDelimiter_exceptionThrown() {
         assertThrows(
-                InvalidArgumentException.class,
-                () -> Parser.parseDeadline("return | book /by 2019-12-02 18:00"));
+                InvalidArgumentException.class, () -> Parser.parseDeadline("return | book /by 2019-12-02 18:00"));
     }
 
     @Test
@@ -149,48 +144,41 @@ class ParserTest {
     @Test
     void parseEvent_missingFromDelimiter_exceptionThrown() {
         assertThrows(
-                MissingArgumentException.class,
-                () -> Parser.parseEvent(
+                MissingArgumentException.class, () -> Parser.parseEvent(
                         "project meeting 2019-12-02 14:00 /to 2019-12-02 16:00"));
     }
 
     @Test
     void parseEvent_missingToDelimiter_exceptionThrown() {
         assertThrows(
-                MissingArgumentException.class,
-                () -> Parser.parseEvent(
+                MissingArgumentException.class, () -> Parser.parseEvent(
                         "project meeting /from 2019-12-02 14:00 2019-12-02 16:00"));
     }
 
     @Test
     void parseEvent_missingRequiredField_exceptionThrown() {
         assertThrows(
-                MissingArgumentException.class,
-                () -> Parser.parseEvent(
+                MissingArgumentException.class, () -> Parser.parseEvent(
                         "project meeting /from /to 2019-12-02 16:00"));
         assertThrows(
-                MissingArgumentException.class,
-                () -> Parser.parseEvent(
+                MissingArgumentException.class, () -> Parser.parseEvent(
                         "project meeting /from 2019-12-02 14:00 /to "));
     }
 
     @Test
     void parseEvent_endNotAfterStart_exceptionThrown() {
         assertThrows(
-                InvalidArgumentException.class,
-                () -> Parser.parseEvent(
+                InvalidArgumentException.class, () -> Parser.parseEvent(
                         "project meeting /from 2019-12-02 16:00 /to 2019-12-02 16:00"));
         assertThrows(
-                InvalidArgumentException.class,
-                () -> Parser.parseEvent(
+                InvalidArgumentException.class, () -> Parser.parseEvent(
                         "project meeting /from 2019-12-02 16:00 /to 2019-12-02 14:00"));
     }
 
     @Test
     void parseEvent_fieldContainsFileDelimiter_exceptionThrown() {
         assertThrows(
-                InvalidArgumentException.class,
-                () -> Parser.parseEvent(
+                InvalidArgumentException.class, () -> Parser.parseEvent(
                         "project | meeting /from 2019-12-02 14:00 /to 2019-12-02 16:00"));
     }
 
@@ -220,24 +208,20 @@ class ParserTest {
     @Test
     void parseDateRange_missingRangeDate_exceptionThrown() {
         assertThrows(
-                MissingArgumentException.class,
-                () -> Parser.parseDateRange("2019-12-02 /to "));
+                MissingArgumentException.class, () -> Parser.parseDateRange("2019-12-02 /to "));
         assertThrows(
-                MissingArgumentException.class,
-                () -> Parser.parseDateRange(" /to 2019-12-05"));
+                MissingArgumentException.class, () -> Parser.parseDateRange(" /to 2019-12-05"));
     }
 
     @Test
     void parseDateRange_endBeforeStart_exceptionThrown() {
         assertThrows(
-                InvalidArgumentException.class,
-                () -> Parser.parseDateRange("2019-12-05 /to 2019-12-02"));
+                InvalidArgumentException.class, () -> Parser.parseDateRange("2019-12-05 /to 2019-12-02"));
     }
 
     @Test
     void parseDateRange_invalidDate_exceptionThrown() {
         assertThrows(
-                InvalidArgumentException.class,
-                () -> Parser.parseDateRange("2019-02-29"));
+                InvalidArgumentException.class, () -> Parser.parseDateRange("2019-02-29"));
     }
 }

@@ -26,7 +26,7 @@ import shan.ui.Ui;
 
 class CommandExecutionTest {
     @Test
-    void add_execute_saveSucceeds_addsAndPersistsTask() throws DataFileException {
+    void add_saveSucceeds_addsAndPersistsTask() throws DataFileException {
         TaskList tasks = new TaskList();
         Task task = new ToDo("read book");
         RecordingUi ui = new RecordingUi();
@@ -41,21 +41,20 @@ class CommandExecutionTest {
     }
 
     @Test
-    void add_execute_saveFails_removesAddedTask() {
+    void add_saveFails_removesAddedTask() {
         TaskList tasks = new TaskList();
         RecordingUi ui = new RecordingUi();
         RecordingStorage storage = new RecordingStorage(true);
 
         assertThrows(
-                DataFileException.class,
-                () -> new AddCommand(new ToDo("read book")).execute(tasks, ui, storage));
+                DataFileException.class, () -> new AddCommand(new ToDo("read book")).execute(tasks, ui, storage));
 
         assertEquals(0, tasks.size());
         assertNull(ui.message());
     }
 
     @Test
-    void delete_execute_validTask_deletesAndPersistsRemainingTasks()
+    void delete_validTask_deletesAndPersistsRemainingTasks()
             throws InvalidArgumentException, DataFileException {
         Task firstTask = new ToDo("first task");
         Task secondTask = new ToDo("second task");
@@ -71,14 +70,13 @@ class CommandExecutionTest {
     }
 
     @Test
-    void delete_execute_invalidTaskNumber_exceptionThrownWithoutSaving() {
+    void delete_invalidTaskNumber_exceptionThrownWithoutSaving() {
         TaskList tasks = taskListOf(new ToDo("read book"));
         RecordingUi ui = new RecordingUi();
         RecordingStorage storage = new RecordingStorage(false);
 
         assertThrows(
-                InvalidArgumentException.class,
-                () -> new DeleteCommand(2).execute(tasks, ui, storage));
+                InvalidArgumentException.class, () -> new DeleteCommand(2).execute(tasks, ui, storage));
 
         assertEquals(1, tasks.size());
         assertEquals(0, storage.saveCalls());
@@ -86,7 +84,7 @@ class CommandExecutionTest {
     }
 
     @Test
-    void delete_execute_saveFails_restoresTaskAtOriginalPosition() {
+    void delete_saveFails_restoresTaskAtOriginalPosition() {
         Task firstTask = new ToDo("first task");
         Task secondTask = new ToDo("second task");
         TaskList tasks = taskListOf(firstTask, secondTask);
@@ -94,8 +92,7 @@ class CommandExecutionTest {
         RecordingStorage storage = new RecordingStorage(true);
 
         assertThrows(
-                DataFileException.class,
-                () -> new DeleteCommand(1).execute(tasks, ui, storage));
+                DataFileException.class, () -> new DeleteCommand(1).execute(tasks, ui, storage));
 
         assertEquals(2, tasks.size());
         assertSame(firstTask, tasks.get(1));
@@ -104,7 +101,7 @@ class CommandExecutionTest {
     }
 
     @Test
-    void mark_execute_validTask_marksAndPersistsTask()
+    void mark_validTask_marksAndPersistsTask()
             throws InvalidArgumentException, DataFileException {
         Task task = new ToDo("read book");
         TaskList tasks = taskListOf(task);
@@ -118,22 +115,21 @@ class CommandExecutionTest {
     }
 
     @Test
-    void mark_execute_saveFails_restoresIncompleteState() {
+    void mark_saveFails_restoresIncompleteState() {
         Task task = new ToDo("read book");
         TaskList tasks = taskListOf(task);
         RecordingUi ui = new RecordingUi();
         RecordingStorage storage = new RecordingStorage(true);
 
         assertThrows(
-                DataFileException.class,
-                () -> new MarkCommand(1).execute(tasks, ui, storage));
+                DataFileException.class, () -> new MarkCommand(1).execute(tasks, ui, storage));
 
         assertFalse(task.isDone());
         assertNull(ui.message());
     }
 
     @Test
-    void unmark_execute_validTask_unmarksAndPersistsTask()
+    void unmark_validTask_unmarksAndPersistsTask()
             throws InvalidArgumentException, DataFileException {
         Task task = new ToDo("read book");
         task.markDone();
@@ -148,7 +144,7 @@ class CommandExecutionTest {
     }
 
     @Test
-    void unmark_execute_saveFails_restoresCompletedState() {
+    void unmark_saveFails_restoresCompletedState() {
         Task task = new ToDo("read book");
         task.markDone();
         TaskList tasks = taskListOf(task);
@@ -156,15 +152,14 @@ class CommandExecutionTest {
         RecordingStorage storage = new RecordingStorage(true);
 
         assertThrows(
-                DataFileException.class,
-                () -> new UnmarkCommand(1).execute(tasks, ui, storage));
+                DataFileException.class, () -> new UnmarkCommand(1).execute(tasks, ui, storage));
 
         assertTrue(task.isDone());
         assertNull(ui.message());
     }
 
     @Test
-    void on_execute_rangeQuery_displaysOnlyOverlappingDatedTasks() {
+    void on_rangeQuery_displaysOnlyOverlappingDatedTasks() {
         LocalDateTime deadlineDate = LocalDateTime.of(2019, 12, 3, 18, 0);
         Task toDo = new ToDo("read book");
         Task deadline = new Deadline("return book", deadlineDate);
@@ -187,7 +182,7 @@ class CommandExecutionTest {
     }
 
     @Test
-    void find_execute_matchingTasks_displaysRenumberedMatchesWithoutSaving() {
+    void find_matchingTasks_displaysRenumberedMatchesWithoutSaving() {
         Task nonMatch = new ToDo("write report");
         Task firstMatch = new ToDo("read book");
         Task secondMatch = new Deadline(
@@ -207,7 +202,7 @@ class CommandExecutionTest {
     }
 
     @Test
-    void find_execute_noMatchingTask_displaysEmptyResultWithoutSaving() {
+    void find_noMatchingTask_displaysEmptyResultWithoutSaving() {
         TaskList tasks = taskListOf(new ToDo("read book"));
         RecordingUi ui = new RecordingUi();
         RecordingStorage storage = new RecordingStorage(false);

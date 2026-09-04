@@ -30,4 +30,8 @@ Prerequisites: JDK 25, update Intellij to the most recent version.
 
 # Running with gradle
 `./gradlew clean test`
-`./gradlew run`
+`./gradlew run --console=plain --quiet`
+
+# Running checkstyle
+`./gradlew checkstyleMain checkstyleTest`
+
