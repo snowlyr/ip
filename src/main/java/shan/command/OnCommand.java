@@ -2,7 +2,6 @@ package shan.command;
 
 import java.time.LocalDate;
 
-import shan.ResponseSink;
 import shan.datetime.DateTimeParser;
 import shan.storage.Storage;
 import shan.task.Task;
@@ -30,11 +29,10 @@ public class OnCommand extends Command {
      * Displays dated tasks that overlap this command's inclusive date range.
      *
      * @param tasks   Task list to search.
-     * @param responseSink Receives the message produced by the command.
      * @param storage Storage collaborator; unused because searching does not persist changes.
      */
     @Override
-    public void execute(TaskList tasks, ResponseSink responseSink, Storage storage) {
+    public String execute(TaskList tasks, Storage storage) {
         boolean isRange = !this.startDate.equals(this.endDate);
         String displayStartDate = DateTimeParser.formatDateForDisplay(this.startDate);
         String displayEndDate = DateTimeParser.formatDateForDisplay(this.endDate);
@@ -53,12 +51,11 @@ public class OnCommand extends Command {
         }
 
         if (matchCount == 0) {
-            responseSink.showMessage(isRange
+            return isRange
                     ? String.format("There are no deadlines or events from %s to %s.",
                             displayStartDate, displayEndDate)
-                    : String.format("There are no deadlines or events on %s.", displayStartDate));
-            return;
+                    : String.format("There are no deadlines or events on %s.", displayStartDate);
         }
-        responseSink.showMessage(result.toString());
+        return result.toString();
     }
 }

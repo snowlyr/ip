@@ -28,7 +28,7 @@ public final class Parser {
     /**
      * Commands understood by Shan.
      */
-    public enum CommandType {
+    private enum CommandType {
         /** Exits Shan. */
         BYE,
         /** Lists all tasks. */
@@ -128,7 +128,7 @@ public final class Parser {
      * @throws MissingArgumentException If the task number is missing.
      * @throws InvalidArgumentException If the task number is not an integer.
      */
-    public static int parseTaskNumber(String argument)
+    static int parseTaskNumber(String argument)
             throws MissingArgumentException, InvalidArgumentException {
         if (argument.isBlank()) {
             throw new MissingArgumentException("Specify a task number.");
@@ -149,7 +149,7 @@ public final class Parser {
      * @throws MissingArgumentException If the description is empty.
      * @throws InvalidArgumentException If the description contains the save-file delimiter.
      */
-    public static ToDo parseToDo(String taskName)
+    static ToDo parseToDo(String taskName)
             throws MissingArgumentException, InvalidArgumentException {
         if (taskName.isBlank()) {
             throw new MissingArgumentException("The task description cannot be empty my guy.");
@@ -166,7 +166,7 @@ public final class Parser {
      * @throws MissingArgumentException If a required field or delimiter is missing.
      * @throws InvalidArgumentException If a field or date-time is invalid.
      */
-    public static Deadline parseDeadline(String arguments)
+    static Deadline parseDeadline(String arguments)
             throws MissingArgumentException, InvalidArgumentException {
         if (arguments.isBlank()) {
             throw new MissingArgumentException(
@@ -196,7 +196,7 @@ public final class Parser {
      * @throws MissingArgumentException If a required field or delimiter is missing.
      * @throws InvalidArgumentException If a field, date-time, or range is invalid.
      */
-    public static Event parseEvent(String arguments)
+    static Event parseEvent(String arguments)
             throws MissingArgumentException, InvalidArgumentException {
         if (arguments.isBlank()) {
             throw new MissingArgumentException("The event description cannot be empty...");
@@ -236,7 +236,7 @@ public final class Parser {
      * @throws MissingArgumentException If a required date is missing.
      * @throws InvalidArgumentException If a date or range is invalid.
      */
-    public static DateRange parseDateRange(String argument)
+    static DateRange parseDateRange(String argument)
             throws MissingArgumentException, InvalidArgumentException {
         if (argument.isBlank()) {
             throw new MissingArgumentException("Specify a date using yyyy-MM-dd format pleaseee ><.");

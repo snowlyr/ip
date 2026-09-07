@@ -19,11 +19,23 @@ public abstract class Command {
      * Executes this command.
      *
      * @param tasks   Task list on which the command operates.
-     * @param responseSink Receives the message produced by the command.
      * @param storage Storage used to persist task changes.
+     * @return Message produced by the command.
      * @throws ShanException If the command cannot be completed.
      */
-    public abstract void execute(TaskList tasks, ResponseSink responseSink, Storage storage) throws ShanException;
+    public abstract String execute(TaskList tasks, Storage storage) throws ShanException;
+
+    /**
+     * Executes this command and sends its result to a response sink.
+     *
+     * @param tasks        Task list on which the command operates.
+     * @param responseSink Receives the message produced by the command.
+     * @param storage      Storage used to persist task changes.
+     * @throws ShanException If the command cannot be completed.
+     */
+    public void execute(TaskList tasks, ResponseSink responseSink, Storage storage) throws ShanException {
+        responseSink.showMessage(execute(tasks, storage));
+    }
 
     /**
      * Returns whether Shan should exit after executing this command.

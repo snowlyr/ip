@@ -1,6 +1,5 @@
 package shan.command;
 
-import shan.ResponseSink;
 import shan.exception.DataFileException;
 import shan.exception.InvalidArgumentException;
 import shan.storage.Storage;
@@ -26,13 +25,12 @@ public class UnmarkCommand extends Command {
      * Marks the selected task as incomplete, saves the change, and reports the result.
      *
      * @param tasks   Task list containing the task to unmark.
-     * @param responseSink Receives the message produced by the command.
      * @param storage Storage used to persist the updated task list.
      * @throws InvalidArgumentException If the task number does not exist.
      * @throws DataFileException        If the updated task list cannot be saved.
      */
     @Override
-    public void execute(TaskList tasks, ResponseSink responseSink, Storage storage)
+    public String execute(TaskList tasks, Storage storage)
             throws InvalidArgumentException, DataFileException {
         if (!tasks.containsTaskNumber(this.taskNumber)) {
             throw new InvalidArgumentException("oops, this task does not exist!!");
@@ -49,8 +47,8 @@ public class UnmarkCommand extends Command {
             }
             throw exception;
         }
-        responseSink.showMessage(String.format(
+        return String.format(
                 "What happened? I have unmarked this task as completed...\n  %s",
-                task));
+                task);
     }
 }

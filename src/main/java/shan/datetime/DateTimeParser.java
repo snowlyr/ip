@@ -14,15 +14,15 @@ import shan.exception.InvalidArgumentException;
  * Parses and formats the date-times used by Shan's dated tasks.
  */
 public final class DateTimeParser {
-    private static final DateTimeFormatter DATE_INPUT_FORMATTER = formatter("uuuu-MM-dd");
+    private static final DateTimeFormatter DATE_INPUT_FORMATTER = createStrictFormatter("uuuu-MM-dd");
     private static final DateTimeFormatter DATE_DISPLAY_FORMATTER =
             DateTimeFormatter.ofPattern("MMM dd uuuu", Locale.ENGLISH);
     private static final List<DateTimeFormatter> INPUT_FORMATTERS = List.of(
-            formatter("uuuu-MM-dd HH:mm"),
-            formatter("d/M/uuuu HHmm"));
+            createStrictFormatter("uuuu-MM-dd HH:mm"),
+            createStrictFormatter("d/M/uuuu HHmm"));
     private static final DateTimeFormatter DISPLAY_FORMATTER =
             DateTimeFormatter.ofPattern("MMM dd uuuu, h:mm a", Locale.ENGLISH);
-    private static final DateTimeFormatter STORAGE_FORMATTER = formatter("uuuu-MM-dd HH:mm");
+    private static final DateTimeFormatter STORAGE_FORMATTER = createStrictFormatter("uuuu-MM-dd HH:mm");
 
     private DateTimeParser() {
     }
@@ -97,7 +97,7 @@ public final class DateTimeParser {
      * @param pattern Date-time pattern.
      * @return Strict locale-independent formatter.
      */
-    private static DateTimeFormatter formatter(String pattern) {
+    private static DateTimeFormatter createStrictFormatter(String pattern) {
         return DateTimeFormatter.ofPattern(pattern, Locale.ROOT)
                 .withResolverStyle(ResolverStyle.STRICT);
     }

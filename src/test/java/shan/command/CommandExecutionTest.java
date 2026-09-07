@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 
 import shan.exception.DataFileException;
 import shan.exception.InvalidArgumentException;
+import shan.exception.ShanException;
 import shan.storage.Storage;
 import shan.task.Deadline;
 import shan.task.Event;
@@ -26,7 +27,7 @@ import shan.ui.Ui;
 
 class CommandExecutionTest {
     @Test
-    void add_saveSucceeds_addsAndPersistsTask() throws DataFileException {
+    void add_saveSucceeds_addsAndPersistsTask() throws ShanException {
         TaskList tasks = new TaskList();
         Task task = new ToDo("read book");
         RecordingUi ui = new RecordingUi();
@@ -55,7 +56,7 @@ class CommandExecutionTest {
 
     @Test
     void delete_validTask_deletesAndPersistsRemainingTasks()
-            throws InvalidArgumentException, DataFileException {
+            throws ShanException {
         Task firstTask = new ToDo("first task");
         Task secondTask = new ToDo("second task");
         TaskList tasks = taskListOf(firstTask, secondTask);
@@ -102,7 +103,7 @@ class CommandExecutionTest {
 
     @Test
     void mark_validTask_marksAndPersistsTask()
-            throws InvalidArgumentException, DataFileException {
+            throws ShanException {
         Task task = new ToDo("read book");
         TaskList tasks = taskListOf(task);
         RecordingUi ui = new RecordingUi();
@@ -133,7 +134,7 @@ class CommandExecutionTest {
 
     @Test
     void unmark_validTask_unmarksAndPersistsTask()
-            throws InvalidArgumentException, DataFileException {
+            throws ShanException {
         Task task = new ToDo("read book");
         task.markDone();
         TaskList tasks = taskListOf(task);
@@ -165,7 +166,7 @@ class CommandExecutionTest {
     }
 
     @Test
-    void on_rangeQuery_displaysOnlyOverlappingDatedTasks() {
+    void on_rangeQuery_displaysOnlyOverlappingDatedTasks() throws ShanException {
         LocalDateTime deadlineDate = LocalDateTime.of(2019, 12, 3, 18, 0);
         Task toDo = new ToDo("read book");
         Task deadline = new Deadline("return book", deadlineDate);
@@ -188,7 +189,7 @@ class CommandExecutionTest {
     }
 
     @Test
-    void find_matchingTasks_displaysRenumberedMatchesWithoutSaving() {
+    void find_matchingTasks_displaysRenumberedMatchesWithoutSaving() throws ShanException {
         Task nonMatch = new ToDo("write report");
         Task firstMatch = new ToDo("read book");
         Task secondMatch = new Deadline(
@@ -208,7 +209,7 @@ class CommandExecutionTest {
     }
 
     @Test
-    void find_noMatchingTask_displaysEmptyResultWithoutSaving() {
+    void find_noMatchingTask_displaysEmptyResultWithoutSaving() throws ShanException {
         TaskList tasks = taskListOf(new ToDo("read book"));
         RecordingUi ui = new RecordingUi();
         RecordingStorage storage = new RecordingStorage(false);
