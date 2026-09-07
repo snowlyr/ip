@@ -112,6 +112,9 @@ class CommandExecutionTest {
 
         assertTrue(task.isDone());
         assertEquals(List.of(task), storage.savedTasks());
+        assertEquals(
+                "Well done! I have marked this task as done!\n  [T][X] read book",
+                ui.message());
     }
 
     @Test
@@ -141,6 +144,9 @@ class CommandExecutionTest {
 
         assertFalse(task.isDone());
         assertEquals(List.of(task), storage.savedTasks());
+        assertEquals(
+                "What happened? I have unmarked this task as completed...\n  [T][ ] read book",
+                ui.message());
     }
 
     @Test

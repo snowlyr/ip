@@ -40,7 +40,7 @@ public class UnmarkCommand extends Command {
 
         Task task = tasks.get(this.taskNumber);
         boolean wasDone = task.isDone();
-        String taskDisplay = task.unmarkDone();
+        task.unmarkDone();
         try {
             storage.save(tasks.snapshot());
         } catch (DataFileException exception) {
@@ -51,6 +51,6 @@ public class UnmarkCommand extends Command {
         }
         responseSink.showMessage(String.format(
                 "What happened? I have unmarked this task as completed...\n  %s",
-                taskDisplay));
+                task));
     }
 }

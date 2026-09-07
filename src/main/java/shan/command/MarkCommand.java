@@ -40,7 +40,7 @@ public class MarkCommand extends Command {
 
         Task task = tasks.get(this.taskNumber);
         boolean wasDone = task.isDone();
-        String taskDisplay = task.markDone();
+        task.markDone();
         try {
             storage.save(tasks.snapshot());
         } catch (DataFileException exception) {
@@ -50,6 +50,6 @@ public class MarkCommand extends Command {
             throw exception;
         }
         responseSink.showMessage(String.format(
-                "Well done! I have marked this task as done!\n  %s", taskDisplay));
+                "Well done! I have marked this task as done!\n  %s", task));
     }
 }
