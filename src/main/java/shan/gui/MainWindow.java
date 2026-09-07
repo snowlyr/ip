@@ -50,12 +50,12 @@ public class MainWindow extends AnchorPane {
     public void setShan(Shan shan) {
         this.shan = shan;
         this.dialogContainer.getChildren().add(
-                DialogBox.getShanDialog("Hey! I'm Shan.\nHow can I help?", this.shanImage));
+                DialogBox.createShanDialog("Hey! I'm Shan.\nHow can I help?", this.shanImage));
 
         String startupWarning = this.shan.initialize();
         if (startupWarning != null) {
             this.dialogContainer.getChildren().add(
-                    DialogBox.getShanDialog(startupWarning, this.shanImage));
+                    DialogBox.createShanDialog(startupWarning, this.shanImage));
         }
     }
 
@@ -71,8 +71,8 @@ public class MainWindow extends AnchorPane {
 
         CommandResult result = this.shan.executeCommand(input);
         this.dialogContainer.getChildren().addAll(
-                DialogBox.getUserDialog(input, this.userImage),
-                DialogBox.getShanDialog(result.message(), this.shanImage));
+                DialogBox.createUserDialog(input, this.userImage),
+                DialogBox.createShanDialog(result.message(), this.shanImage));
         this.userInput.clear();
 
         if (result.shouldExit()) {
