@@ -121,6 +121,7 @@ public class Storage {
         if (fields.length != expectedFieldCount) {
             return null;
         }
+        assert expectedFieldCount > 0 : "Task type must be recognized after field validation";
         for (int i = 2; i < fields.length; i++) {
             if (fields[i].isBlank()) {
                 return null;
