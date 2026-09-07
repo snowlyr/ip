@@ -2,11 +2,9 @@ package shan.gui;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import shan.CommandResult;
 import shan.Shan;
@@ -14,7 +12,7 @@ import shan.Shan;
 /**
  * Controls the main Shan window defined in {@code MainWindow.fxml}.
  */
-public class MainWindow extends AnchorPane {
+public class MainWindow {
     private final Image userImage = new Image(
             this.getClass().getResourceAsStream("/images/DaUser.png"));
     private final Image shanImage = new Image(
@@ -26,8 +24,6 @@ public class MainWindow extends AnchorPane {
     private VBox dialogContainer;
     @FXML
     private TextField userInput;
-    @FXML
-    private Button sendButton;
 
     private Shan shan;
 
