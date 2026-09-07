@@ -98,13 +98,9 @@ public class TaskList {
      * @return Immutable list of matching tasks in their original order.
      */
     public List<Task> find(String keyword) {
-        ArrayList<Task> matchingTasks = new ArrayList<>();
-        for (Task task : this.tasks) {
-            if (task.containsKeyword(keyword)) {
-                matchingTasks.add(task);
-            }
-        }
-        return List.copyOf(matchingTasks);
+        return this.tasks.stream()
+                .filter(task -> task.containsKeyword(keyword))
+                .toList();
     }
 
     /**

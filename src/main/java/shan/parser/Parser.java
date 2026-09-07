@@ -2,6 +2,7 @@ package shan.parser;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Locale;
 
 import shan.command.AddCommand;
@@ -265,10 +266,10 @@ public final class Parser {
      * @throws InvalidArgumentException If a field contains {@code |}.
      */
     private static void validateFileFields(String... fields) throws InvalidArgumentException {
-        for (String field : fields) {
-            if (field.contains("|")) {
-                throw new InvalidArgumentException("Task details cannot contain |.");
-            }
+        boolean containsFileDelimiter = Arrays.stream(fields)
+                .anyMatch(field -> field.contains("|"));
+        if (containsFileDelimiter) {
+            throw new InvalidArgumentException("Task details cannot contain |.");
         }
     }
 
