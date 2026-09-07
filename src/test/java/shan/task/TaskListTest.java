@@ -91,6 +91,27 @@ class TaskListTest {
     }
 
     @Test
+    void get_missingTask_assertionThrown() {
+        TaskList tasks = new TaskList();
+
+        assertThrows(AssertionError.class, () -> tasks.get(1));
+    }
+
+    @Test
+    void restore_positionOutsideList_assertionThrown() {
+        TaskList tasks = new TaskList();
+
+        assertThrows(AssertionError.class, () -> tasks.restore(2, new ToDo("read book")));
+    }
+
+    @Test
+    void removeLast_emptyList_assertionThrown() {
+        TaskList tasks = new TaskList();
+
+        assertThrows(AssertionError.class, tasks::removeLast);
+    }
+
+    @Test
     void replaceAll_sourceListChanged_taskListIsUnaffected() {
         Task task = new ToDo("read book");
         ArrayList<Task> sourceTasks = new ArrayList<>(List.of(task));
