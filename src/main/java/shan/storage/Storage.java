@@ -93,10 +93,9 @@ public class Storage {
                 Files.createDirectories(parentDirectory);
             }
 
-            ArrayList<String> lines = new ArrayList<>();
-            for (Task task : tasks) {
-                lines.add(task.toFileString());
-            }
+            List<String> lines = tasks.stream()
+                    .map(Task::toFileString)
+                    .toList();
             Files.write(this.dataFile, lines);
         } catch (IOException | SecurityException exception) {
             throw new DataFileException(
