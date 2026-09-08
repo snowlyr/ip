@@ -47,4 +47,9 @@ public class DeleteCommand extends Command {
                 "Noted. I've removed this task:\n  %s\nNow you have %d tasks.",
                 removedTask, tasks.size());
     }
+
+    @Override
+    public boolean isUndoable() {
+        return true;
+    }
 }

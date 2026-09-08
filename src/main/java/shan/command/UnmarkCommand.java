@@ -51,4 +51,9 @@ public class UnmarkCommand extends Command {
                 "What happened? I have unmarked this task as completed...\n  %s",
                 task);
     }
+
+    @Override
+    public boolean isUndoable() {
+        return true;
+    }
 }

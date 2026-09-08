@@ -50,4 +50,9 @@ public class MarkCommand extends Command {
         return String.format(
                 "Well done! I have marked this task as done!\n  %s", task);
     }
+
+    @Override
+    public boolean isUndoable() {
+        return true;
+    }
 }
