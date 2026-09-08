@@ -2,7 +2,6 @@ package shan.command;
 
 import java.util.List;
 
-import shan.ResponseSink;
 import shan.storage.Storage;
 import shan.task.Task;
 import shan.task.TaskList;
@@ -23,13 +22,13 @@ public class FindCommand extends Command {
     }
 
     @Override
-    public void execute(TaskList tasks, ResponseSink responseSink, Storage storage) {
+    public String execute(TaskList tasks, Storage storage) {
         List<Task> matchingTasks = tasks.find(this.keyword);
         StringBuilder result = new StringBuilder(
                 "Here are the matching tasks in your list:");
         for (int index = 0; index < matchingTasks.size(); index++) {
             result.append(String.format("\n%d.%s", index + 1, matchingTasks.get(index)));
         }
-        responseSink.showMessage(result.toString());
+        return result.toString();
     }
 }

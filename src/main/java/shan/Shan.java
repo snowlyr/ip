@@ -14,9 +14,10 @@ import shan.ui.Ui;
  * Runs the Shan chatbot.
  */
 public class Shan {
+    private static final Path DEFAULT_DATA_FILE = Path.of("data", "shan.txt");
+
     private final Storage storage;
     private final TaskList tasks;
-    private final Ui ui;
     private boolean isInitialized;
 
     /**
@@ -27,7 +28,13 @@ public class Shan {
     public Shan(Path dataFile) {
         this.storage = new Storage(dataFile);
         this.tasks = new TaskList();
-        this.ui = new Ui();
+    }
+
+    /**
+     * Constructs Shan with the default task data file.
+     */
+    public Shan() {
+        this(DEFAULT_DATA_FILE);
     }
 
     /**
@@ -36,7 +43,7 @@ public class Shan {
      * @param args Command-line arguments; unused.
      */
     public static void main(String[] args) {
-        new Shan(Path.of("data", "shan.txt")).run();
+        new Shan().run();
     }
 
     /**
@@ -60,11 +67,9 @@ public class Shan {
      * @return Message to show the user and whether the application should exit.
      */
     public CommandResult executeCommand(String input) {
-        StringBuilder response = new StringBuilder();
         try {
             Command command = Parser.parse(input);
-            command.execute(this.tasks, response::append, this.storage);
-            return new CommandResult(response.toString(), command.isExit());
+            return new CommandResult(command.execute(this.tasks, this.storage), command.isExit());
         } catch (ShanException exception) {
             return new CommandResult(exception.getMessage(), false);
         }
@@ -74,21 +79,22 @@ public class Shan {
      * Loads saved tasks and processes commands from standard input.
      */
     public void run() {
+        Ui ui = new Ui();
         String startupWarning = initialize();
-        this.ui.showWelcome();
+        ui.showWelcome();
         if (startupWarning != null) {
-            this.ui.showMessage(startupWarning);
+            ui.showMessage(startupWarning);
         }
 
         boolean isExit = false;
-        while (!isExit && this.ui.hasNextCommand()) {
-            String inputLine = this.ui.readCommand();
+        while (!isExit && ui.hasNextCommand()) {
+            String inputLine = ui.readCommand();
             CommandResult result = executeCommand(inputLine);
-            this.ui.showMessage(result.message());
+            ui.showMessage(result.message());
             isExit = result.shouldExit();
         }
 
-        this.ui.close();
+        ui.close();
     }
 
     /**

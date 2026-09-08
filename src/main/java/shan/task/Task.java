@@ -16,27 +16,23 @@ public abstract class Task {
      * @param taskName Name of the task.
      */
     public Task(String taskName) {
+        assert taskName != null : "Task name must not be null";
+        assert !taskName.isBlank() : "Task name must not be blank";
         this.taskName = taskName;
     }
 
     /**
      * Marks this task as done.
-     *
-     * @return Display representation of this task.
      */
-    public String markDone() {
+    public void markDone() {
         this.isDone = true;
-        return this.toString();
     }
 
     /**
      * Marks this task as not done.
-     *
-     * @return Display representation of this task.
      */
-    public String unmarkDone() {
+    public void unmarkDone() {
         this.isDone = false;
-        return this.toString();
     }
 
     /**

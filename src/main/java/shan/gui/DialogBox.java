@@ -1,14 +1,10 @@
 package shan.gui;
 
 import java.io.IOException;
-import java.util.Collections;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -45,7 +41,7 @@ public class DialogBox extends HBox {
      * @param image Image representing the user.
      * @return Dialog configured for a user message.
      */
-    public static DialogBox getUserDialog(String text, Image image) {
+    public static DialogBox createUserDialog(String text, Image image) {
         return new DialogBox(text, image);
     }
 
@@ -56,20 +52,17 @@ public class DialogBox extends HBox {
      * @param image Image representing Shan.
      * @return Dialog configured for a Shan message.
      */
-    public static DialogBox getShanDialog(String text, Image image) {
+    public static DialogBox createShanDialog(String text, Image image) {
         DialogBox dialogBox = new DialogBox(text, image);
-        dialogBox.flip();
+        dialogBox.configureForShan();
         return dialogBox;
     }
 
     /**
-     * Places the sender image on the left of the message.
+     * Configures this dialog for a Shan response.
      */
-    private void flip() {
-        ObservableList<Node> dialogElements = FXCollections.observableArrayList(
-                this.getChildren());
-        Collections.reverse(dialogElements);
-        this.getChildren().setAll(dialogElements);
+    private void configureForShan() {
+        this.getChildren().setAll(this.displayPicture, this.dialog);
         this.setAlignment(Pos.TOP_LEFT);
         this.dialog.getStyleClass().add("reply-label");
     }

@@ -7,7 +7,7 @@ import java.util.List;
  * Manages the collection of tasks used by Shan.
  */
 public class TaskList {
-    private final ArrayList<Task> tasks;
+    private final List<Task> tasks;
 
     /**
      * Constructs an empty task list.
@@ -29,6 +29,8 @@ public class TaskList {
      * @param tasks Tasks that should populate this list.
      */
     public void replaceAll(List<Task> tasks) {
+        assert tasks != null : "Replacement task list must not be null";
+        assert tasks.stream().allMatch(task -> task != null) : "Replacement task list must not contain null";
         this.tasks.clear();
         this.tasks.addAll(tasks);
     }
@@ -39,6 +41,7 @@ public class TaskList {
      * @param task Task to add.
      */
     public void add(Task task) {
+        assert task != null : "Task to add must not be null";
         this.tasks.add(task);
     }
 
@@ -49,6 +52,7 @@ public class TaskList {
      * @return Deleted task.
      */
     public Task delete(int taskNumber) {
+        assert containsTaskNumber(taskNumber) : "Task number to delete must exist";
         return this.tasks.remove(taskNumber - 1);
     }
 
@@ -59,6 +63,9 @@ public class TaskList {
      * @param task       Task to restore.
      */
     public void restore(int taskNumber, Task task) {
+        assert taskNumber >= 1 && taskNumber <= this.tasks.size() + 1
+                : "Restore position must be within the task list";
+        assert task != null : "Task to restore must not be null";
         this.tasks.add(taskNumber - 1, task);
     }
 
@@ -68,6 +75,7 @@ public class TaskList {
      * @return Removed task.
      */
     public Task removeLast() {
+        assert !this.tasks.isEmpty() : "Task list must not be empty when removing its final task";
         return this.tasks.remove(this.tasks.size() - 1);
     }
 
@@ -78,6 +86,7 @@ public class TaskList {
      * @return Task with the supplied number.
      */
     public Task get(int taskNumber) {
+        assert containsTaskNumber(taskNumber) : "Task number to retrieve must exist";
         return this.tasks.get(taskNumber - 1);
     }
 

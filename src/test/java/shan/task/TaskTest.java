@@ -2,6 +2,7 @@ package shan.task;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
@@ -10,24 +11,29 @@ import org.junit.jupiter.api.Test;
 
 class TaskTest {
     @Test
-    void markDone_incompleteTask_marksTaskAndReturnsUpdatedDisplay() {
-        Task task = new ToDo("read book");
-
-        String display = task.markDone();
-
-        assertTrue(task.isDone());
-        assertEquals("[T][X] read book", display);
+    void constructor_blankTaskName_assertionThrown() {
+        assertThrows(AssertionError.class, () -> new ToDo(" "));
     }
 
     @Test
-    void unmarkDone_completedTask_unmarksTaskAndReturnsUpdatedDisplay() {
+    void markDone_incompleteTask_marksTaskAndReturnsUpdatedDisplay() {
+        Task task = new ToDo("read book");
+
+        task.markDone();
+
+        assertTrue(task.isDone());
+        assertEquals("[T][X] read book", task.toString());
+    }
+
+    @Test
+    void unmarkDone_completedTask_unmarksTask() {
         Task task = new ToDo("read book");
         task.markDone();
 
-        String display = task.unmarkDone();
+        task.unmarkDone();
 
         assertFalse(task.isDone());
-        assertEquals("[T][ ] read book", display);
+        assertEquals("[T][ ] read book", task.toString());
     }
 
     @Test
