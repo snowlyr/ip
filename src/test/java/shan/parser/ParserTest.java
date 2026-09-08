@@ -17,6 +17,7 @@ import shan.command.FindCommand;
 import shan.command.ListCommand;
 import shan.command.MarkCommand;
 import shan.command.OnCommand;
+import shan.command.UndoCommand;
 import shan.command.UnmarkCommand;
 import shan.exception.InvalidArgumentException;
 import shan.exception.InvalidCommandException;
@@ -34,6 +35,7 @@ class ParserTest {
         assertInstanceOf(FindCommand.class, Parser.parse("find book"));
         assertInstanceOf(MarkCommand.class, Parser.parse("mark 1"));
         assertInstanceOf(UnmarkCommand.class, Parser.parse("unmark 1"));
+        assertInstanceOf(UndoCommand.class, Parser.parse("undo"));
         assertInstanceOf(DeleteCommand.class, Parser.parse("delete 1"));
         assertInstanceOf(OnCommand.class, Parser.parse("on 2019-12-02"));
         assertInstanceOf(AddCommand.class, Parser.parse("todo read book"));

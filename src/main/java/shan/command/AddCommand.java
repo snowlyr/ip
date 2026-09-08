@@ -40,4 +40,9 @@ public class AddCommand extends Command {
                 "I Gotchu. I've added this:\n  %s\nNow you have %d tasks.",
                 this.task, tasks.size());
     }
+
+    @Override
+    public boolean isUndoable() {
+        return true;
+    }
 }

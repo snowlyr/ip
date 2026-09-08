@@ -228,6 +228,25 @@ class CommandExecutionTest {
         assertEquals(0, storage.saveCalls());
     }
 
+    @Test
+    void undo_saveFails_restoresCurrentStateAndRetainsUndoState() {
+        Task firstTask = new ToDo("first task");
+        Task secondTask = new ToDo("second task");
+        TaskList tasks = taskListOf(firstTask);
+        TaskList.State stateBeforeAdd = tasks.createState();
+        tasks.add(secondTask);
+        tasks.recordUndoState(stateBeforeAdd);
+        RecordingStorage storage = new RecordingStorage(true);
+
+        assertThrows(
+                DataFileException.class, () -> new UndoCommand().execute(tasks, storage));
+
+        assertEquals(2, tasks.size());
+        assertSame(firstTask, tasks.get(1));
+        assertSame(secondTask, tasks.get(2));
+        assertTrue(tasks.canUndo());
+    }
+
     private TaskList taskListOf(Task... tasks) {
         TaskList taskList = new TaskList();
         taskList.replaceAll(List.of(tasks));

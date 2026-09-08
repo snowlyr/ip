@@ -45,4 +45,13 @@ public abstract class Command {
     public boolean isExit() {
         return false;
     }
+
+    /**
+     * Returns whether this command changes task-list state and can be undone.
+     *
+     * @return {@code true} when successful execution should create an undo point.
+     */
+    public boolean isUndoable() {
+        return false;
+    }
 }

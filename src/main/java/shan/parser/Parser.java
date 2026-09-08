@@ -12,6 +12,7 @@ import shan.command.FindCommand;
 import shan.command.ListCommand;
 import shan.command.MarkCommand;
 import shan.command.OnCommand;
+import shan.command.UndoCommand;
 import shan.command.UnmarkCommand;
 import shan.datetime.DateTimeParser;
 import shan.exception.InvalidArgumentException;
@@ -39,6 +40,8 @@ public final class Parser {
         MARK,
         /** Marks a task as not completed. */
         UNMARK,
+        /** Reverses the most recent task-list change. */
+        UNDO,
         /** Deletes a task. */
         DELETE,
         /** Shows dated tasks on a date or within a range. */
@@ -82,6 +85,7 @@ public final class Parser {
             case LIST -> new ListCommand();
             case FIND -> parseFindCommand(arguments);
             case MARK -> new MarkCommand(parseTaskNumber(arguments));
+            case UNDO -> new UndoCommand();
             case UNMARK -> new UnmarkCommand(parseTaskNumber(arguments));
             case DELETE -> new DeleteCommand(parseTaskNumber(arguments));
             case ON -> parseOnCommand(arguments);

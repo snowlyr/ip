@@ -69,7 +69,12 @@ public class Shan {
     public CommandResult executeCommand(String input) {
         try {
             Command command = Parser.parse(input);
-            return new CommandResult(command.execute(this.tasks, this.storage), command.isExit());
+            TaskList.State stateBeforeCommand = this.tasks.createState();
+            String response = command.execute(this.tasks, this.storage);
+            if (command.isUndoable()) {
+                this.tasks.recordUndoState(stateBeforeCommand);
+            }
+            return new CommandResult(response, command.isExit());
         } catch (ShanException exception) {
             return new CommandResult(exception.getMessage(), false);
         }
