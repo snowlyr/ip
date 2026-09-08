@@ -1,15 +1,25 @@
 package shan.task;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.Test;
 
 class EventTest {
     private static final LocalDate EVENT_START_DATE = LocalDate.of(2019, 12, 3);
     private static final LocalDate EVENT_END_DATE = LocalDate.of(2019, 12, 5);
+
+    @Test
+    void constructor_endNotAfterStart_assertionThrown() {
+        LocalDateTime startDate = EVENT_START_DATE.atTime(14, 0);
+
+        assertThrows(
+                AssertionError.class, () -> new Event("project meeting", startDate, startDate));
+    }
 
     @Test
     void occursBetween_rangeOverlapsEventStart_returnsTrue() {

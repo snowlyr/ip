@@ -35,6 +35,8 @@ public class MainWindow {
 
     @FXML
     private void initialize() {
+        assert this.scrollPane != null : "Scroll pane must be injected before initialization";
+        assert this.dialogContainer != null : "Dialog container must be injected before initialization";
         this.scrollPane.vvalueProperty().bind(this.dialogContainer.heightProperty());
     }
 
@@ -44,6 +46,8 @@ public class MainWindow {
      * @param shan Shan instance that processes user commands.
      */
     public void setShan(Shan shan) {
+        assert shan != null : "Shan must not be null";
+        assert this.dialogContainer != null : "Dialog container must be injected before Shan is set";
         this.shan = shan;
         this.dialogContainer.getChildren().add(
                 DialogBox.createShanDialog("Hey! I'm Shan.\nHow can I help?", this.shanImage));
@@ -60,6 +64,7 @@ public class MainWindow {
      */
     @FXML
     private void handleUserInput() {
+        assert this.shan != null : "Shan must be set before handling user input";
         String input = this.userInput.getText().trim();
         if (input.isEmpty()) {
             return;

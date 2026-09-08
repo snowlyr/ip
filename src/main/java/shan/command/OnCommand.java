@@ -21,6 +21,9 @@ public class OnCommand extends Command {
      * @param endDate   Last date in the range.
      */
     public OnCommand(LocalDate startDate, LocalDate endDate) {
+        assert startDate != null : "Range start date must not be null";
+        assert endDate != null : "Range end date must not be null";
+        assert !endDate.isBefore(startDate) : "Range end date must not be before its start date";
         this.startDate = startDate;
         this.endDate = endDate;
     }

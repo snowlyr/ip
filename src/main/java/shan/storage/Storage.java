@@ -146,7 +146,7 @@ public class Storage {
     private boolean hasValidHeader(String[] fields) {
         return fields.length > STATUS_FIELD_INDEX
                 && (fields[STATUS_FIELD_INDEX].equals(INCOMPLETE_STATUS)
-                || fields[STATUS_FIELD_INDEX].equals(COMPLETE_STATUS));
+                        || fields[STATUS_FIELD_INDEX].equals(COMPLETE_STATUS));
     }
 
     private boolean hasExpectedFieldCount(String[] fields) {

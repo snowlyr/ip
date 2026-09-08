@@ -189,6 +189,14 @@ class CommandExecutionTest {
     }
 
     @Test
+    void on_endBeforeStart_assertionThrown() {
+        LocalDate startDate = LocalDate.of(2019, 12, 5);
+        LocalDate endDate = LocalDate.of(2019, 12, 3);
+
+        assertThrows(AssertionError.class, () -> new OnCommand(startDate, endDate));
+    }
+
+    @Test
     void find_matchingTasks_displaysRenumberedMatchesWithoutSaving() throws ShanException {
         Task nonMatch = new ToDo("write report");
         Task firstMatch = new ToDo("read book");
