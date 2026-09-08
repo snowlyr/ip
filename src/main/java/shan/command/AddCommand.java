@@ -1,6 +1,5 @@
 package shan.command;
 
-import shan.ResponseSink;
 import shan.exception.DataFileException;
 import shan.storage.Storage;
 import shan.task.Task;
@@ -25,12 +24,11 @@ public class AddCommand extends Command {
      * Adds the task, saves the updated list, and reports the result.
      *
      * @param tasks   Task list to update.
-     * @param responseSink Receives the message produced by the command.
      * @param storage Storage used to persist the updated task list.
      * @throws DataFileException If the updated task list cannot be saved.
      */
     @Override
-    public void execute(TaskList tasks, ResponseSink responseSink, Storage storage) throws DataFileException {
+    public String execute(TaskList tasks, Storage storage) throws DataFileException {
         tasks.add(this.task);
         try {
             storage.save(tasks.snapshot());
@@ -38,8 +36,8 @@ public class AddCommand extends Command {
             tasks.removeLast();
             throw exception;
         }
-        responseSink.showMessage(String.format(
+        return String.format(
                 "I Gotchu. I've added this:\n  %s\nNow you have %d tasks.",
-                this.task, tasks.size()));
+                this.task, tasks.size());
     }
 }

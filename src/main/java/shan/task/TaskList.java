@@ -7,7 +7,7 @@ import java.util.List;
  * Manages the collection of tasks used by Shan.
  */
 public class TaskList {
-    private final ArrayList<Task> tasks;
+    private final List<Task> tasks;
 
     /**
      * Constructs an empty task list.

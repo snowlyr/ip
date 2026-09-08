@@ -1,7 +1,6 @@
 package shan.gui;
 
 import java.io.IOException;
-import java.nio.file.Path;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -14,7 +13,7 @@ import shan.Shan;
  * Provides the JavaFX graphical interface for Shan using FXML.
  */
 public class Main extends Application {
-    private final Shan shan = new Shan(Path.of("data", "shan.txt"));
+    private final Shan shan = new Shan();
 
     /**
      * Constructs the JavaFX application.

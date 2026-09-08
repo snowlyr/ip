@@ -19,21 +19,21 @@ class TaskTest {
     void markDone_incompleteTask_marksTaskAndReturnsUpdatedDisplay() {
         Task task = new ToDo("read book");
 
-        String display = task.markDone();
+        task.markDone();
 
         assertTrue(task.isDone());
-        assertEquals("[T][X] read book", display);
+        assertEquals("[T][X] read book", task.toString());
     }
 
     @Test
-    void unmarkDone_completedTask_unmarksTaskAndReturnsUpdatedDisplay() {
+    void unmarkDone_completedTask_unmarksTask() {
         Task task = new ToDo("read book");
         task.markDone();
 
-        String display = task.unmarkDone();
+        task.unmarkDone();
 
         assertFalse(task.isDone());
-        assertEquals("[T][ ] read book", display);
+        assertEquals("[T][ ] read book", task.toString());
     }
 
     @Test
