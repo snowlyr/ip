@@ -33,7 +33,8 @@ public class DeleteCommand extends Command {
     public String execute(TaskList tasks, Storage storage)
             throws InvalidArgumentException, DataFileException {
         if (!tasks.containsTaskNumber(this.taskNumber)) {
-            throw new InvalidArgumentException("Woopsies, this task does not exist!!");
+            throw new InvalidArgumentException(
+                    String.format("Task %d does not exist.", this.taskNumber));
         }
 
         Task removedTask = tasks.delete(this.taskNumber);

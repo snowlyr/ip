@@ -33,7 +33,7 @@ class ShanTest {
 
         CommandResult result = shan.executeCommand("unknown");
 
-        assertEquals("I don't understand bro.", result.message());
+        assertEquals("I don't recognize that command.", result.message());
         assertFalse(result.shouldExit());
     }
 

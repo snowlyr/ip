@@ -3,6 +3,8 @@ package shan.parser;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import shan.command.AddCommand;
 import shan.command.Command;
@@ -68,24 +70,33 @@ public final class Parser {
      */
     public static Command parse(String inputLine)
             throws InvalidCommandException, MissingArgumentException, InvalidArgumentException {
-        if (inputLine.isBlank()) {
-            throw new InvalidCommandException("Enter a command dood.");
+        if (inputLine == null || inputLine.isBlank()) {
+            throw new InvalidCommandException("Enter a command.");
         }
 
-        String[] tokens = inputLine.split("\\s+", 2);
+        String[] tokens = inputLine.trim().split("\\s+", 2);
         CommandType commandType;
         try {
             commandType = CommandType.valueOf(tokens[0].toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException exception) {
-            throw new InvalidCommandException("I don't understand bro.");
+            throw new InvalidCommandException("I don't recognize that command.");
         }
         String arguments = tokens.length == 2 ? tokens[1] : "";
         return switch (commandType) {
-            case BYE -> new ExitCommand();
-            case LIST -> new ListCommand();
+            case BYE -> {
+                rejectUnexpectedArguments("bye", arguments);
+                yield new ExitCommand();
+            }
+            case LIST -> {
+                rejectUnexpectedArguments("list", arguments);
+                yield new ListCommand();
+            }
             case FIND -> parseFindCommand(arguments);
             case MARK -> new MarkCommand(parseTaskNumber(arguments));
-            case UNDO -> new UndoCommand();
+            case UNDO -> {
+                rejectUnexpectedArguments("undo", arguments);
+                yield new UndoCommand();
+            }
             case UNMARK -> new UnmarkCommand(parseTaskNumber(arguments));
             case DELETE -> new DeleteCommand(parseTaskNumber(arguments));
             case ON -> parseOnCommand(arguments);
@@ -134,14 +145,24 @@ public final class Parser {
      */
     static int parseTaskNumber(String argument)
             throws MissingArgumentException, InvalidArgumentException {
-        if (argument.isBlank()) {
+        if (argument == null || argument.isBlank()) {
             throw new MissingArgumentException("Specify a task number.");
         }
-
+        String normalizedArgument = argument.trim();
+        if (!normalizedArgument.matches("\\d+")) {
+            throw new InvalidArgumentException(
+                    "The task number must be a positive whole number.");
+        }
         try {
-            return Integer.parseInt(argument);
+            int taskNumber = Integer.parseInt(normalizedArgument);
+            if (taskNumber < 1) {
+                throw new InvalidArgumentException(
+                        "The task number must be a positive whole number.");
+            }
+            return taskNumber;
         } catch (NumberFormatException exception) {
-            throw new InvalidArgumentException("The task number must be an int.");
+            throw new InvalidArgumentException(
+                    "The task number must be a positive whole number.");
         }
     }
 
@@ -151,15 +172,16 @@ public final class Parser {
      * @param taskName Name of the task.
      * @return Parsed ToDo task.
      * @throws MissingArgumentException If the description is empty.
-     * @throws InvalidArgumentException If the description contains the save-file delimiter.
+     * @throws InvalidArgumentException If the description contains an unsupported character.
      */
     static ToDo parseToDo(String taskName)
             throws MissingArgumentException, InvalidArgumentException {
-        if (taskName.isBlank()) {
-            throw new MissingArgumentException("The task description cannot be empty my guy.");
+        if (taskName == null || taskName.isBlank()) {
+            throw new MissingArgumentException("The task description cannot be empty.");
         }
-        validateFileFields(taskName);
-        return new ToDo(taskName);
+        String normalizedTaskName = taskName.trim();
+        validateFileFields(normalizedTaskName);
+        return new ToDo(normalizedTaskName);
     }
 
     /**
@@ -172,21 +194,19 @@ public final class Parser {
      */
     static Deadline parseDeadline(String arguments)
             throws MissingArgumentException, InvalidArgumentException {
-        if (arguments.isBlank()) {
-            throw new MissingArgumentException(
-                    "The deadline description cannot be empty, else its not a deadline");
+        if (arguments == null || arguments.isBlank()) {
+            throw new MissingArgumentException("The deadline description cannot be empty.");
         }
 
-        String[] deadlineDetails = arguments.split("/by", 2);
-        if (deadlineDetails.length < 2) {
-            throw new MissingArgumentException("Please specify a deadline using /by.");
-        }
+        int byIndex = findSingleParameterIndex(
+                arguments, "/by", "Please specify a deadline using /by.");
+        String[] deadlineDetails = splitAtParameter(arguments, "/by", byIndex);
         if (deadlineDetails[0].isBlank() || deadlineDetails[1].isBlank()) {
-            throw new MissingArgumentException("The deadline description and date cannot be empty bruh.");
+            throw new MissingArgumentException("The deadline description and date cannot be empty.");
         }
 
         String taskName = deadlineDetails[0].trim();
-        String endDateInput = deadlineDetails[1].trim();
+        String endDateInput = normalizeDateTimeInput(deadlineDetails[1]);
         validateFileFields(taskName, endDateInput);
         LocalDateTime endDate = DateTimeParser.parse(endDateInput);
         return new Deadline(taskName, endDate);
@@ -202,32 +222,30 @@ public final class Parser {
      */
     static Event parseEvent(String arguments)
             throws MissingArgumentException, InvalidArgumentException {
-        if (arguments.isBlank()) {
-            throw new MissingArgumentException("The event description cannot be empty...");
+        if (arguments == null || arguments.isBlank()) {
+            throw new MissingArgumentException("The event description cannot be empty.");
         }
 
-        String[] fromDetails = arguments.split("/from", 2);
-        if (fromDetails.length < 2) {
-            throw new MissingArgumentException("Specify the event start using /from.");
+        int fromIndex = findSingleParameterIndex(
+                arguments, "/from", "Specify the event start using /from.");
+        int toIndex = findSingleParameterIndex(
+                arguments, "/to", "Specify the event end using /to.");
+        if (toIndex < fromIndex) {
+            throw new InvalidArgumentException("Specify /from before /to.");
         }
-
-        String[] toDetails = fromDetails[1].split("/to", 2);
-        if (toDetails.length < 2) {
-            throw new MissingArgumentException("Specify the event end using /to.");
-        }
-        if (fromDetails[0].isBlank() || toDetails[0].isBlank() || toDetails[1].isBlank()) {
+        String taskName = arguments.substring(0, fromIndex).trim();
+        String startDateInput = normalizeDateTimeInput(
+                arguments.substring(fromIndex + "/from".length(), toIndex));
+        String endDateInput = normalizeDateTimeInput(arguments.substring(toIndex + "/to".length()));
+        if (taskName.isBlank() || startDateInput.isBlank() || endDateInput.isBlank()) {
             throw new MissingArgumentException(
-                    "The event description, start, and end cannot be empty, lock in bro.");
+                    "The event description, start, and end cannot be empty.");
         }
-
-        String taskName = fromDetails[0].trim();
-        String startDateInput = toDetails[0].trim();
-        String endDateInput = toDetails[1].trim();
         validateFileFields(taskName, startDateInput, endDateInput);
         LocalDateTime startDate = DateTimeParser.parse(startDateInput);
         LocalDateTime endDate = DateTimeParser.parse(endDateInput);
         if (!endDate.isAfter(startDate)) {
-            throw new InvalidArgumentException("The event end must be after its start bro.");
+            throw new InvalidArgumentException("The event end must be after its start.");
         }
         return new Event(taskName, startDate, endDate);
     }
@@ -242,11 +260,13 @@ public final class Parser {
      */
     static DateRange parseDateRange(String argument)
             throws MissingArgumentException, InvalidArgumentException {
-        if (argument.isBlank()) {
-            throw new MissingArgumentException("Specify a date using yyyy-MM-dd format pleaseee ><.");
+        if (argument == null || argument.isBlank()) {
+            throw new MissingArgumentException("Specify a date using yyyy-MM-dd format.");
         }
 
-        String[] dateInputs = argument.split("/to", 2);
+        int toIndex = findOptionalSingleParameterIndex(argument, "/to");
+        String[] dateInputs = toIndex < 0
+                ? new String[] {argument} : splitAtParameter(argument, "/to", toIndex);
         if (dateInputs.length == 2 && (dateInputs[0].isBlank() || dateInputs[1].isBlank())) {
             throw new MissingArgumentException("Specify both range dates using /to.");
         }
@@ -257,7 +277,7 @@ public final class Parser {
                 : DateTimeParser.parseDate(dateInputs[1].trim());
         if (endDate.isBefore(startDate)) {
             throw new InvalidArgumentException(
-                    "The range end date cannot be before its start date, bro?");
+                    "The range end date cannot be before its start date.");
         }
         return new DateRange(startDate, endDate);
     }
@@ -266,14 +286,104 @@ public final class Parser {
      * Rejects values containing the delimiter reserved by the save-file format.
      *
      * @param fields Task fields to validate.
-     * @throws InvalidArgumentException If a field contains {@code |}.
+     * @throws InvalidArgumentException If a field contains an unsupported character.
      */
     private static void validateFileFields(String... fields) throws InvalidArgumentException {
         for (String field : fields) {
             if (field.contains("|")) {
                 throw new InvalidArgumentException("Task details cannot contain |.");
             }
+            if (field.codePoints().anyMatch(Character::isISOControl)) {
+                throw new InvalidArgumentException(
+                        "Task details cannot contain control characters.");
+            }
         }
+    }
+
+    /**
+     * Normalizes harmless whitespace differences in a date-time argument.
+     *
+     * @param input Date-time text supplied by the user.
+     * @return Trimmed date-time with each whitespace run replaced by one space.
+     */
+    private static String normalizeDateTimeInput(String input) {
+        return input.trim().replaceAll("\\s+", " ");
+    }
+
+    /**
+     * Rejects arguments supplied to a command that does not accept any.
+     *
+     * @param commandName Command entered by the user.
+     * @param arguments   Unexpected command arguments.
+     * @throws InvalidArgumentException If any argument was supplied.
+     */
+    private static void rejectUnexpectedArguments(String commandName, String arguments)
+            throws InvalidArgumentException {
+        if (!arguments.isBlank()) {
+            throw new InvalidArgumentException(
+                    String.format("The %s command does not accept arguments.", commandName));
+        }
+    }
+
+    /**
+     * Finds a required parameter that must occur exactly once.
+     *
+     * @param input          Input containing the parameter.
+     * @param parameter      Slash-prefixed parameter to find.
+     * @param missingMessage Message to use when the parameter is absent.
+     * @return Index at which the parameter starts.
+     * @throws MissingArgumentException If the parameter is absent.
+     * @throws InvalidArgumentException If the parameter occurs more than once.
+     */
+    private static int findSingleParameterIndex(
+            String input, String parameter, String missingMessage)
+            throws MissingArgumentException, InvalidArgumentException {
+        int parameterIndex = findOptionalSingleParameterIndex(input, parameter);
+        if (parameterIndex < 0) {
+            throw new MissingArgumentException(missingMessage);
+        }
+        return parameterIndex;
+    }
+
+    /**
+     * Finds an optional parameter that may occur at most once.
+     *
+     * @param input     Input that may contain the parameter.
+     * @param parameter Slash-prefixed parameter to find.
+     * @return Parameter index, or {@code -1} when absent.
+     * @throws InvalidArgumentException If the parameter occurs more than once.
+     */
+    private static int findOptionalSingleParameterIndex(String input, String parameter)
+            throws InvalidArgumentException {
+        Pattern parameterPattern = Pattern.compile(
+                "(?<!\\S)" + Pattern.quote(parameter) + "(?!\\S)");
+        Matcher matcher = parameterPattern.matcher(input);
+        if (!matcher.find()) {
+            return -1;
+        }
+
+        int parameterIndex = matcher.start();
+        if (matcher.find()) {
+            throw new InvalidArgumentException(
+                    String.format("Specify %s only once.", parameter));
+        }
+        return parameterIndex;
+    }
+
+    /**
+     * Splits input around a parameter whose location has already been validated.
+     *
+     * @param input          Input containing the parameter.
+     * @param parameter      Slash-prefixed parameter.
+     * @param parameterIndex Index at which the parameter starts.
+     * @return Text before and after the parameter.
+     */
+    private static String[] splitAtParameter(
+            String input, String parameter, int parameterIndex) {
+        return new String[] {
+            input.substring(0, parameterIndex),
+            input.substring(parameterIndex + parameter.length())
+        };
     }
 
     /**

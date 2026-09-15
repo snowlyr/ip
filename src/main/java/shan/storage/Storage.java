@@ -1,8 +1,10 @@
 package shan.storage;
 
 import java.io.IOException;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -87,6 +89,7 @@ public class Storage {
      * @throws DataFileException If the data directory or file cannot be written.
      */
     public void save(List<Task> tasks) throws DataFileException {
+        Path temporaryFile = null;
         try {
             Path parentDirectory = this.dataFile.getParent();
             if (parentDirectory != null) {
@@ -97,10 +100,36 @@ public class Storage {
             for (Task task : tasks) {
                 lines.add(task.toFileString());
             }
-            Files.write(this.dataFile, lines);
+            Path temporaryDirectory = parentDirectory == null ? Path.of(".") : parentDirectory;
+            temporaryFile = Files.createTempFile(temporaryDirectory, ".shan-", ".tmp");
+            Files.write(temporaryFile, lines);
+            replaceDataFile(temporaryFile);
         } catch (IOException | SecurityException exception) {
             throw new DataFileException(
                     String.format("I couldn't save your tasks to %s.", getFilePath()));
+        } finally {
+            if (temporaryFile != null) {
+                try {
+                    Files.deleteIfExists(temporaryFile);
+                } catch (IOException | SecurityException ignored) {
+                    // A failed cleanup must not hide the original save result.
+                }
+            }
+        }
+    }
+
+    /**
+     * Replaces the data file atomically when the file system supports it.
+     *
+     * @param temporaryFile Fully written temporary file.
+     * @throws IOException If the temporary file cannot replace the data file.
+     */
+    private void replaceDataFile(Path temporaryFile) throws IOException {
+        try {
+            Files.move(temporaryFile, this.dataFile,
+                    StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+        } catch (AtomicMoveNotSupportedException exception) {
+            Files.move(temporaryFile, this.dataFile, StandardCopyOption.REPLACE_EXISTING);
         }
     }
 
@@ -121,7 +150,7 @@ public class Storage {
      */
     private Optional<Task> parseSavedTask(String line) {
         String[] fields = line.trim().split("\\s*\\|\\s*", -1);
-        if (!hasValidHeader(fields) || !hasExpectedFieldCount(fields) || hasBlankTaskField(fields)) {
+        if (!hasValidHeader(fields) || !hasExpectedFieldCount(fields) || hasInvalidTaskField(fields)) {
             return Optional.empty();
         }
 
@@ -159,9 +188,10 @@ public class Storage {
         return fields.length == expectedFieldCount;
     }
 
-    private boolean hasBlankTaskField(String[] fields) {
+    private boolean hasInvalidTaskField(String[] fields) {
         for (int i = DESCRIPTION_FIELD_INDEX; i < fields.length; i++) {
-            if (fields[i].isBlank()) {
+            if (fields[i].isBlank()
+                    || fields[i].codePoints().anyMatch(Character::isISOControl)) {
                 return true;
             }
         }
