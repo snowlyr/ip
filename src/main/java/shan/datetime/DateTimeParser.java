@@ -35,6 +35,10 @@ public final class DateTimeParser {
      * @throws InvalidArgumentException If the input has an unsupported format or invalid date.
      */
     public static LocalDateTime parse(String input) throws InvalidArgumentException {
+        if (input == null) {
+            throw new InvalidArgumentException(
+                    "Use a valid date and time in yyyy-MM-dd HH:mm or d/M/yyyy HHmm format.");
+        }
         for (DateTimeFormatter formatter : INPUT_FORMATTERS) {
             try {
                 return LocalDateTime.parse(input, formatter);
@@ -54,6 +58,9 @@ public final class DateTimeParser {
      * @throws InvalidArgumentException If the input is not a valid date in the supported format.
      */
     public static LocalDate parseDate(String input) throws InvalidArgumentException {
+        if (input == null) {
+            throw new InvalidArgumentException("Use a valid date in yyyy-MM-dd format.");
+        }
         try {
             return LocalDate.parse(input, DATE_INPUT_FORMATTER);
         } catch (DateTimeParseException exception) {

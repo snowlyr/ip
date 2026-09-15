@@ -26,25 +26,27 @@ public class MarkCommand extends Command {
      *
      * @param tasks   Task list containing the task to mark.
      * @param storage Storage used to persist the updated task list.
-     * @throws InvalidArgumentException If the task number does not exist.
+     * @throws InvalidArgumentException If the task does not exist or is already completed.
      * @throws DataFileException        If the updated task list cannot be saved.
      */
     @Override
     public String execute(TaskList tasks, Storage storage)
             throws InvalidArgumentException, DataFileException {
         if (!tasks.containsTaskNumber(this.taskNumber)) {
-            throw new InvalidArgumentException("Woopsies, this task does not exist!!");
+            throw new InvalidArgumentException(
+                    String.format("Task %d does not exist.", this.taskNumber));
         }
 
         Task task = tasks.get(this.taskNumber);
-        boolean wasDone = task.isDone();
+        if (task.isDone()) {
+            throw new InvalidArgumentException(
+                    String.format("Task %d is already marked as done.", this.taskNumber));
+        }
         task.markDone();
         try {
             storage.save(tasks.snapshot());
         } catch (DataFileException exception) {
-            if (!wasDone) {
-                task.unmarkDone();
-            }
+            task.unmarkDone();
             throw exception;
         }
         return String.format(
